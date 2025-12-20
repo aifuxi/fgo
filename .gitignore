@@ -21,9 +21,9 @@ go.work
 .DS_Store
 
 # Editor/IDE
-.idea/
-.vscode/
+# .idea/
+# .vscode/
 *.swp
 
-# Docker
-data/
+# air
+tmp/
