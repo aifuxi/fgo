@@ -22,7 +22,9 @@ type TagService struct {
 }
 
 var (
-	ErrTagNotFound = errors.New("tag not found")
+	ErrTagNotFound   = errors.New("tag not found")
+	ErrTagSlugExists = errors.New("tag slug already exists")
+	ErrTagNameExists = errors.New("tag name already exists")
 )
 
 func NewTagService(tagRepo repository.ITagRepository) ITagService {
@@ -41,7 +43,7 @@ func (s *TagService) Create(ctx context.Context, req dto.TagCreateReq) (*model.T
 	}
 
 	if existNameTag.ID != 0 {
-		return nil, errors.New("tag name already exists")
+		return nil, ErrTagNameExists
 	}
 
 	existSlugTag, err := s.tagRepo.FindBySlug(ctx, req.Slug)
@@ -50,7 +52,7 @@ func (s *TagService) Create(ctx context.Context, req dto.TagCreateReq) (*model.T
 	}
 
 	if existSlugTag.ID != 0 {
-		return nil, errors.New("tag slug already exists")
+		return nil, ErrTagSlugExists
 	}
 
 	createdTag, err := s.tagRepo.Create(ctx, tag)
