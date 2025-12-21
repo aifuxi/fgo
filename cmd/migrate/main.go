@@ -8,5 +8,5 @@ import (
 func main() {
 	db.InitMySQL()
 
-	db.DB.AutoMigrate(&model.Tag{})
+	db.GetDB().AutoMigrate(&model.Tag{})
 }
