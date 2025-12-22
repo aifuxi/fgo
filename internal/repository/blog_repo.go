@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/aifuxi/fgo/internal/model"
 	"gorm.io/gorm"
@@ -17,6 +18,7 @@ type BlogListOption struct {
 	Order      string
 	CategoryID uint
 	TagIDs     []uint
+	Published  *bool
 }
 
 type BlogRepository interface {
@@ -38,6 +40,13 @@ func NewBlogRepository(db *gorm.DB) BlogRepository {
 }
 
 func (r *blogRepo) Create(ctx context.Context, blog *model.Blog) error {
+	if blog.Published {
+		now := time.Now()
+		blog.PublishedAt = &now
+	} else {
+		blog.PublishedAt = nil
+	}
+
 	if err := r.db.WithContext(ctx).Create(blog).Error; err != nil {
 		return err
 	}
@@ -47,6 +56,13 @@ func (r *blogRepo) Create(ctx context.Context, blog *model.Blog) error {
 
 func (r *blogRepo) Update(ctx context.Context, blog *model.Blog) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if blog.Published {
+			now := time.Now()
+			blog.PublishedAt = &now
+		} else {
+			blog.PublishedAt = nil
+		}
+
 		// 更新基本字段
 		if err := tx.Model(blog).Updates(blog).Error; err != nil {
 			return err
@@ -82,6 +98,10 @@ func (r *blogRepo) List(ctx context.Context, option BlogListOption) ([]*model.Bl
 
 	if option.Slug != "" {
 		query = query.Where("slug LIKE ?", "%"+option.Slug+"%")
+	}
+
+	if option.Published != nil {
+		query = query.Where("published = ?", *option.Published)
 	}
 
 	// Count total records with filters but without pagination

@@ -68,17 +68,29 @@ func (s *blogService) Create(ctx context.Context, req *dto.BlogCreateReq) error 
 		Content:     req.Content,
 		CategoryID:  req.CategoryID,
 		Tags:        tags,
+		Published:   req.Published,
 	}
 
 	return s.repo.Create(ctx, blog)
 }
 
 func (s *blogService) List(ctx context.Context, req *dto.BlogListReq) ([]*model.Blog, int64, error) {
+	var published *bool
+	switch req.PublishedStatus {
+	case "published":
+		published = new(bool)
+		*published = true
+	case "unpublished":
+		published = new(bool)
+		*published = false
+	}
+
 	return s.repo.List(ctx, repository.BlogListOption{
 		Page:       req.Page,
 		PageSize:   req.PageSize,
 		Title:      req.Title,
 		Slug:       req.Slug,
+		Published:  published,
 		SortBy:     req.SortBy,
 		Order:      req.Order,
 		CategoryID: req.CategoryID,
