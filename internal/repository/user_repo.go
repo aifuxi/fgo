@@ -37,15 +37,17 @@ func (r *userRepo) Create(ctx context.Context, user *model.User) error {
 }
 
 func (r *userRepo) Update(ctx context.Context, user *model.User) error {
-	return r.db.WithContext(ctx).Model(user).Association("Roles").Replace(user.Roles)
-	// Also update user fields
-	// return r.db.WithContext(ctx).Save(user).Error
-	// Better to use Updates for fields and Association for roles, but Save works if ID is present.
-	// Let's stick to Updates for fields and handle Roles separately if needed, but Save is easier for full update.
-	// However, usually we update specific fields.
-	// Let's assume the service handles the logic of what to update.
-	// But here, let's just save the user.
-	return r.db.WithContext(ctx).Session(&gorm.Session{FullSaveAssociations: true}).Save(user).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Save(user).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(user).Association("Roles").Replace(user.Roles); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (r *userRepo) List(ctx context.Context, option UserListOption) ([]*model.User, int64, error) {
