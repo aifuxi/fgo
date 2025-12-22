@@ -9,16 +9,16 @@ import (
 	"github.com/aifuxi/fgo/internal/repository"
 )
 
-type ITagService interface {
+type TagService interface {
 	Create(ctx context.Context, req dto.TagCreateReq) (*model.Tag, error)
-	FindAll(ctx context.Context, req dto.TagListReq) ([]*model.Tag, int64, error)
+	List(ctx context.Context, req dto.TagListReq) ([]*model.Tag, int64, error)
 	FindByID(ctx context.Context, id uint) (*model.Tag, error)
-	DeleteByID(ctx context.Context, id uint) error
 	UpdateByID(ctx context.Context, id uint, req dto.TagUpdateReq) (*model.Tag, error)
+	DeleteByID(ctx context.Context, id uint) error
 }
 
-type TagService struct {
-	tagRepo repository.ITagRepository
+type tagService struct {
+	tagRepo repository.TagRepository
 }
 
 var (
@@ -27,11 +27,11 @@ var (
 	ErrTagNameExists = errors.New("tag name already exists")
 )
 
-func NewTagService(tagRepo repository.ITagRepository) ITagService {
-	return &TagService{tagRepo: tagRepo}
+func NewTagService(tagRepo repository.TagRepository) TagService {
+	return &tagService{tagRepo: tagRepo}
 }
 
-func (s *TagService) Create(ctx context.Context, req dto.TagCreateReq) (*model.Tag, error) {
+func (s *tagService) Create(ctx context.Context, req dto.TagCreateReq) (*model.Tag, error) {
 	tag := &model.Tag{
 		Name: req.Name,
 		Slug: req.Slug,
@@ -63,12 +63,12 @@ func (s *TagService) Create(ctx context.Context, req dto.TagCreateReq) (*model.T
 	return createdTag, nil
 }
 
-func (s *TagService) FindAll(ctx context.Context, req dto.TagListReq) ([]*model.Tag, int64, error) {
+func (s *tagService) List(ctx context.Context, req dto.TagListReq) ([]*model.Tag, int64, error) {
 	var tags []*model.Tag
 	var total int64
 	var err error
 
-	tags, total, err = s.tagRepo.FindAll(ctx, repository.TagListOption{
+	tags, total, err = s.tagRepo.List(ctx, repository.TagListOption{
 		Page:     req.Page,
 		PageSize: req.PageSize,
 		Name:     req.Name,
@@ -83,7 +83,7 @@ func (s *TagService) FindAll(ctx context.Context, req dto.TagListReq) ([]*model.
 	return tags, total, nil
 }
 
-func (s *TagService) FindByID(ctx context.Context, id uint) (*model.Tag, error) {
+func (s *tagService) FindByID(ctx context.Context, id uint) (*model.Tag, error) {
 	tag, err := s.tagRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func (s *TagService) FindByID(ctx context.Context, id uint) (*model.Tag, error) 
 	return tag, nil
 }
 
-func (s *TagService) DeleteByID(ctx context.Context, id uint) error {
+func (s *tagService) DeleteByID(ctx context.Context, id uint) error {
 	tag, err := s.tagRepo.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -109,7 +109,7 @@ func (s *TagService) DeleteByID(ctx context.Context, id uint) error {
 	return s.tagRepo.DeleteByID(ctx, id)
 }
 
-func (s *TagService) UpdateByID(ctx context.Context, id uint, req dto.TagUpdateReq) (*model.Tag, error) {
+func (s *tagService) UpdateByID(ctx context.Context, id uint, req dto.TagUpdateReq) (*model.Tag, error) {
 	tag, err := s.tagRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err

@@ -1,0 +1,123 @@
+package repository
+
+import (
+	"context"
+	"errors"
+
+	"github.com/aifuxi/fgo/internal/model"
+	"gorm.io/gorm"
+)
+
+type CategoryListOption struct {
+	Page     int
+	PageSize int
+	Name     string
+	Slug     string
+	SortBy   string
+	Order    string
+}
+
+type CategoryRepository interface {
+	Create(ctx context.Context, category *model.Category) error
+	Update(ctx context.Context, category *model.Category) error
+	List(ctx context.Context, option CategoryListOption) ([]*model.Category, int64, error)
+	FindByID(ctx context.Context, id uint) (*model.Category, error)
+	FindBySlug(ctx context.Context, slug string) (*model.Category, error)
+	FindByName(ctx context.Context, name string) (*model.Category, error)
+	DeleteByID(ctx context.Context, id uint) error
+}
+
+type categoryRepo struct {
+	db *gorm.DB
+}
+
+func NewCategoryRepository(db *gorm.DB) CategoryRepository {
+	return &categoryRepo{db: db}
+}
+
+func (r *categoryRepo) Create(ctx context.Context, category *model.Category) error {
+	return r.db.WithContext(ctx).Create(category).Error
+}
+
+func (r *categoryRepo) Update(ctx context.Context, category *model.Category) error {
+	return r.db.WithContext(ctx).Model(category).Updates(category).Error
+}
+
+func (r *categoryRepo) List(ctx context.Context, option CategoryListOption) ([]*model.Category, int64, error) {
+	var categories []*model.Category
+	var total int64
+
+	query := r.db.WithContext(ctx).Model(&model.Category{})
+
+	if option.Name != "" {
+		query = query.Where("name LIKE ?", "%"+option.Name+"%")
+	}
+
+	if option.Slug != "" {
+		query = query.Where("slug LIKE ?", "%"+option.Slug+"%")
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	sortBy := "created_at"
+	switch option.SortBy {
+	case "createdAt":
+		sortBy = "created_at"
+	case "updatedAt":
+		sortBy = "updated_at"
+	}
+
+	order := "desc"
+	if option.Order != "" {
+		order = option.Order
+	}
+
+	err := query.Order(sortBy + " " + order).
+		Offset((option.Page - 1) * option.PageSize).
+		Limit(option.PageSize).
+		Find(&categories).Error
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return categories, total, nil
+}
+
+func (r *categoryRepo) FindByID(ctx context.Context, id uint) (*model.Category, error) {
+	var category model.Category
+	if err := r.db.WithContext(ctx).First(&category, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &category, nil
+}
+
+func (r *categoryRepo) FindBySlug(ctx context.Context, slug string) (*model.Category, error) {
+	var category model.Category
+	if err := r.db.WithContext(ctx).Where("slug = ?", slug).First(&category).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &category, nil
+}
+
+func (r *categoryRepo) FindByName(ctx context.Context, name string) (*model.Category, error) {
+	var category model.Category
+	if err := r.db.WithContext(ctx).Where("name = ?", name).First(&category).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &category, nil
+}
+
+func (r *categoryRepo) DeleteByID(ctx context.Context, id uint) error {
+	return r.db.WithContext(ctx).Delete(&model.Category{}, id).Error
+}

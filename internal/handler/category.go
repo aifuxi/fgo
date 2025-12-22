@@ -7,73 +7,73 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type TagHandler struct {
-	svc service.TagService
+type CategoryHandler struct {
+	svc service.CategoryService
 }
 
-func NewTagHandler(svc service.TagService) *TagHandler {
-	return &TagHandler{svc: svc}
+func NewCategoryHandler(svc service.CategoryService) *CategoryHandler {
+	return &CategoryHandler{svc: svc}
 }
 
-func (h *TagHandler) Create(ctx *gin.Context) {
-	var req dto.TagCreateReq
+func (h *CategoryHandler) Create(ctx *gin.Context) {
+	var req dto.CategoryCreateReq
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.ParamError(ctx, err.Error())
 		return
 	}
 
-	tag, err := h.svc.Create(ctx, req)
+	err := h.svc.Create(ctx, &req)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return
 	}
 
-	response.Success(ctx, tag)
+	response.Success(ctx, nil)
 }
 
-func (h *TagHandler) List(ctx *gin.Context) {
-	var req dto.TagListReq
+func (h *CategoryHandler) List(ctx *gin.Context) {
+	var req dto.CategoryListReq
 
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		response.ParamError(ctx, err.Error())
 		return
 	}
 
-	lists, total, err := h.svc.List(ctx, req)
+	lists, total, err := h.svc.List(ctx, &req)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return
 	}
 
-	response.Success(ctx, dto.TagListResp{
+	response.Success(ctx, dto.CategoryListResp{
 		Total: total,
 		Lists: lists,
 	})
 }
 
-func (h *TagHandler) FindByID(ctx *gin.Context) {
-	var req dto.TagFindByIDReq
+func (h *CategoryHandler) FindByID(ctx *gin.Context) {
+	var req dto.CategoryFindByIDReq
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		response.ParamError(ctx, err.Error())
 		return
 	}
 
-	tag, err := h.svc.FindByID(ctx, req.ID)
+	category, err := h.svc.FindByID(ctx, req.ID)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return
 	}
 
-	response.Success(ctx, tag)
+	response.Success(ctx, category)
 }
 
-func (h *TagHandler) DeleteByID(ctx *gin.Context) {
-	var req dto.TagFindByIDReq
+func (h *CategoryHandler) DeleteByID(ctx *gin.Context) {
+	var req dto.CategoryFindByIDReq
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		response.ParamError(ctx, err.Error())
@@ -90,26 +90,26 @@ func (h *TagHandler) DeleteByID(ctx *gin.Context) {
 	response.Success(ctx, nil)
 }
 
-func (h *TagHandler) UpdateByID(ctx *gin.Context) {
-	var req dto.TagUpdateReq
+func (h *CategoryHandler) UpdateByID(ctx *gin.Context) {
+	var req dto.CategoryUpdateReq
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		response.ParamError(ctx, err.Error())
 		return
 	}
 
-	var idReq dto.TagFindByIDReq
+	var idReq dto.CategoryFindByIDReq
 	if err := ctx.ShouldBindUri(&idReq); err != nil {
 		response.ParamError(ctx, err.Error())
 		return
 	}
 
-	tag, err := h.svc.UpdateByID(ctx, idReq.ID, req)
+	err := h.svc.UpdateByID(ctx, idReq.ID, &req)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return
 	}
 
-	response.Success(ctx, tag)
+	response.Success(ctx, nil)
 }
