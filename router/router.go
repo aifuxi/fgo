@@ -23,7 +23,8 @@ func Setup() *gin.Engine {
 
 	apiV1 := router.Group("/api/v1")
 
-	userHandler := handler.NewUserHandler(service.NewUserService(repository.NewUserRepository(db.GetDB())))
+	userService := service.NewUserService(repository.NewUserRepository(db.GetDB()))
+	userHandler := handler.NewUserHandler(userService)
 
 	authRoutes := apiV1.Group("/auth")
 	{
@@ -34,10 +35,10 @@ func Setup() *gin.Engine {
 	userRoutes := apiV1.Group("/users")
 	userRoutes.Use(middleware.Auth())
 	{
-		userRoutes.GET("", userHandler.List)
-		userRoutes.GET("/:id", userHandler.FindByID)
-		userRoutes.PUT("/:id", userHandler.Update)
-		userRoutes.DELETE("/:id", userHandler.Delete)
+		userRoutes.GET("", middleware.RequirePermissions(userService, "user::list"), userHandler.List)
+		userRoutes.GET("/:id", middleware.RequirePermissions(userService, "user::view"), userHandler.FindByID)
+		userRoutes.PUT("/:id", middleware.RequirePermissions(userService, "user::update"), userHandler.Update)
+		userRoutes.DELETE("/:id", middleware.RequirePermissions(userService, "user::delete"), userHandler.Delete)
 	}
 
 	roleHandler := handler.NewRoleHandler(service.NewRoleService(repository.NewRoleRepository(db.GetDB())))
@@ -45,11 +46,11 @@ func Setup() *gin.Engine {
 	roleRoutes := apiV1.Group("/roles")
 	roleRoutes.Use(middleware.Auth())
 	{
-		roleRoutes.GET("", roleHandler.List)
-		roleRoutes.POST("", roleHandler.Create)
-		roleRoutes.GET("/:id", roleHandler.FindByID)
-		roleRoutes.PUT("/:id", roleHandler.Update)
-		roleRoutes.DELETE("/:id", roleHandler.Delete)
+		roleRoutes.GET("", middleware.RequirePermissions(userService, "role::list"), roleHandler.List)
+		roleRoutes.POST("", middleware.RequirePermissions(userService, "role::create"), roleHandler.Create)
+		roleRoutes.GET("/:id", middleware.RequirePermissions(userService, "role::view"), roleHandler.FindByID)
+		roleRoutes.PUT("/:id", middleware.RequirePermissions(userService, "role::update"), roleHandler.Update)
+		roleRoutes.DELETE("/:id", middleware.RequirePermissions(userService, "role::delete"), roleHandler.Delete)
 	}
 
 	tagHandler := handler.NewTagHandler(service.NewTagService(repository.NewTagRepository(db.GetDB())))
@@ -57,11 +58,12 @@ func Setup() *gin.Engine {
 	tagRoutes := apiV1.Group("/tags")
 	tagRoutes.Use(middleware.Auth())
 	{
-		tagRoutes.GET("", tagHandler.List)
-		tagRoutes.POST("", tagHandler.Create)
-		tagRoutes.GET("/:id", tagHandler.FindByID)
-		tagRoutes.DELETE("/:id", tagHandler.DeleteByID)
-		tagRoutes.PUT("/:id", tagHandler.UpdateByID)
+		tagRoutes.GET("", middleware.RequirePermissions(userService, "tag::list"), tagHandler.List)
+		tagRoutes.GET("/:id", middleware.RequirePermissions(userService, "tag::view"), tagHandler.FindByID)
+
+		tagRoutes.POST("", middleware.RequirePermissions(userService, "tag::create"), tagHandler.Create)
+		tagRoutes.PUT("/:id", middleware.RequirePermissions(userService, "tag::update"), tagHandler.UpdateByID)
+		tagRoutes.DELETE("/:id", middleware.RequirePermissions(userService, "tag::delete"), tagHandler.DeleteByID)
 	}
 
 	blogHandler := handler.NewBlogHandler(service.NewBlogService(repository.NewBlogRepository(db.GetDB())))
@@ -69,11 +71,12 @@ func Setup() *gin.Engine {
 	blogRoutes := apiV1.Group("/blogs")
 	blogRoutes.Use(middleware.Auth())
 	{
-		blogRoutes.GET("", blogHandler.List)
-		blogRoutes.POST("", blogHandler.Create)
-		blogRoutes.GET("/:id", blogHandler.FindByID)
-		blogRoutes.DELETE("/:id", blogHandler.DeleteByID)
-		blogRoutes.PUT("/:id", blogHandler.UpdateByID)
+		blogRoutes.GET("", middleware.RequirePermissions(userService, "blog::list"), blogHandler.List)
+		blogRoutes.GET("/:id", middleware.RequirePermissions(userService, "blog::view"), blogHandler.FindByID)
+
+		blogRoutes.POST("", middleware.RequirePermissions(userService, "blog::create"), blogHandler.Create)
+		blogRoutes.PUT("/:id", middleware.RequirePermissions(userService, "blog::update"), blogHandler.UpdateByID)
+		blogRoutes.DELETE("/:id", middleware.RequirePermissions(userService, "blog::delete"), blogHandler.DeleteByID)
 	}
 
 	categoryHandler := handler.NewCategoryHandler(service.NewCategoryService(repository.NewCategoryRepository(db.GetDB())))
@@ -81,11 +84,12 @@ func Setup() *gin.Engine {
 	categoryRoutes := apiV1.Group("/categories")
 	categoryRoutes.Use(middleware.Auth())
 	{
-		categoryRoutes.GET("", categoryHandler.List)
-		categoryRoutes.POST("", categoryHandler.Create)
-		categoryRoutes.GET("/:id", categoryHandler.FindByID)
-		categoryRoutes.DELETE("/:id", categoryHandler.DeleteByID)
-		categoryRoutes.PUT("/:id", categoryHandler.UpdateByID)
+		categoryRoutes.GET("", middleware.RequirePermissions(userService, "category::list"), categoryHandler.List)
+		categoryRoutes.GET("/:id", middleware.RequirePermissions(userService, "category::view"), categoryHandler.FindByID)
+
+		categoryRoutes.POST("", middleware.RequirePermissions(userService, "category::create"), categoryHandler.Create)
+		categoryRoutes.PUT("/:id", middleware.RequirePermissions(userService, "category::update"), categoryHandler.UpdateByID)
+		categoryRoutes.DELETE("/:id", middleware.RequirePermissions(userService, "category::delete"), categoryHandler.DeleteByID)
 	}
 
 	return router

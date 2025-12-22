@@ -66,7 +66,7 @@ func (r *userRepo) List(ctx context.Context, option UserListOption) ([]*model.Us
 		return nil, 0, err
 	}
 
-	err := query.Preload("Roles").
+	err := query.Preload("Roles").Preload("Roles.Permissions").
 		Offset((option.Page - 1) * option.PageSize).
 		Limit(option.PageSize).
 		Find(&users).Error
@@ -79,7 +79,7 @@ func (r *userRepo) List(ctx context.Context, option UserListOption) ([]*model.Us
 
 func (r *userRepo) FindByID(ctx context.Context, id uint) (*model.User, error) {
 	var user model.User
-	if err := r.db.WithContext(ctx).Preload("Roles").First(&user, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Roles").Preload("Roles.Permissions").First(&user, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -90,7 +90,7 @@ func (r *userRepo) FindByID(ctx context.Context, id uint) (*model.User, error) {
 
 func (r *userRepo) FindByEmail(ctx context.Context, email string) (*model.User, error) {
 	var user model.User
-	if err := r.db.WithContext(ctx).Preload("Roles").Where("email = ?", email).First(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Roles").Preload("Roles.Permissions").Where("email = ?", email).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
