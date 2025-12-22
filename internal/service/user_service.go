@@ -21,17 +21,19 @@ type UserService interface {
 }
 
 type userService struct {
-	repo repository.UserRepository
+	repo     repository.UserRepository
+	roleRepo repository.RoleRepository
 }
 
 var (
 	ErrUserNotFound           = errors.New("user not found")
 	ErrUserEmailExists        = errors.New("user email already exists")
 	ErrInvalidEmailOrPassword = errors.New("invalid email or password")
+	ErrVisitorRoleNotFound    = errors.New("visitor role not found")
 )
 
-func NewUserService(repo repository.UserRepository) UserService {
-	return &userService{repo: repo}
+func NewUserService(repo repository.UserRepository, roleRepo repository.RoleRepository) UserService {
+	return &userService{repo: repo, roleRepo: roleRepo}
 }
 
 func (s *userService) Register(ctx context.Context, req *dto.UserRegisterReq) error {
@@ -50,10 +52,22 @@ func (s *userService) Register(ctx context.Context, req *dto.UserRegisterReq) er
 		return err
 	}
 
+	// Find visitor role
+	visitorRole, err := s.roleRepo.FindByCode(ctx, model.VisitorRoleCode)
+	if err != nil {
+		return err
+	}
+	if visitorRole == nil {
+		return ErrVisitorRoleNotFound
+	}
+
 	user := &model.User{
 		Nickname: req.Nickname,
 		Email:    req.Email,
 		Password: string(hashedPassword),
+		Roles: []*model.Role{
+			visitorRole,
+		},
 	}
 
 	return s.repo.Create(ctx, user)
@@ -145,6 +159,7 @@ func convertToUserRespList(users []*model.User) []*dto.UserResp {
 			CommonModel: user.CommonModel,
 			Nickname:    user.Nickname,
 			Email:       user.Email,
+			Roles:       user.Roles,
 		})
 	}
 	return userRespList

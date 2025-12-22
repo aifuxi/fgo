@@ -33,7 +33,17 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 }
 
 func (r *userRepo) Create(ctx context.Context, user *model.User) error {
-	return r.db.WithContext(ctx).Create(user).Error
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(user).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Model(user).Association("Roles").Replace(user.Roles); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (r *userRepo) Update(ctx context.Context, user *model.User) error {

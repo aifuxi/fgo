@@ -22,7 +22,10 @@ func Setup() *gin.Engine {
 
 	apiV1 := router.Group("/api/v1")
 
-	userService := service.NewUserService(repository.NewUserRepository(db.GetDB()))
+	userService := service.NewUserService(
+		repository.NewUserRepository(db.GetDB()),
+		repository.NewRoleRepository(db.GetDB()),
+	)
 
 	routes.RegisterAuthRoutes(apiV1, userService)
 	routes.RegisterUserRoutes(apiV1, userService)

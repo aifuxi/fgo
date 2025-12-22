@@ -62,7 +62,7 @@ func main() {
 		database.Where("code = ?", perm.Code).FirstOrCreate(&perm)
 		allPermissions = append(allPermissions, perm)
 
-		if strings.HasSuffix(perm.Code, "::list") || strings.HasSuffix(perm.Code, "::view") {
+		if strings.HasSuffix(perm.Code, ":list") || strings.HasSuffix(perm.Code, ":view") {
 			visitorPermissions = append(visitorPermissions, perm)
 		}
 	}

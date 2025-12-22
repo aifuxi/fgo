@@ -8,3 +8,8 @@ type Role struct {
 	Users       []*User       `gorm:"many2many:user_roles;" json:"users,omitempty"`
 	Permissions []*Permission `gorm:"many2many:role_permissions;" json:"permissions,omitempty"`
 }
+
+const (
+	AdminRoleCode   = "admin"
+	VisitorRoleCode = "visitor"
+)
