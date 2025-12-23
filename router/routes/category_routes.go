@@ -16,11 +16,11 @@ func RegisterCategoryRoutes(api *gin.RouterGroup, svc service.UserService) {
 	routes := api.Group("/categories")
 	routes.Use(middleware.Auth())
 	{
-		routes.GET("", middleware.RequirePermissions(svc, model.PermissionCategoryList), h.List)
-		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionCategoryView), h.FindByID)
+		routes.GET("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionCategoryList), h.List)
+		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionCategoryView), h.FindByID)
 
-		routes.POST("", middleware.RequirePermissions(svc, model.PermissionCategoryCreate), h.Create)
-		routes.PUT("/:id", middleware.RequirePermissions(svc, model.PermissionCategoryUpdate), h.UpdateByID)
-		routes.DELETE("/:id", middleware.RequirePermissions(svc, model.PermissionCategoryDelete), h.DeleteByID)
+		routes.POST("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionCategoryCreate), h.Create)
+		routes.PUT("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionCategoryUpdate), h.UpdateByID)
+		routes.DELETE("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionCategoryDelete), h.DeleteByID)
 	}
 }

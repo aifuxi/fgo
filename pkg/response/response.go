@@ -53,3 +53,12 @@ func Unauthorized(ctx *gin.Context, msg string) {
 		Timestamp: time.Now(),
 	})
 }
+
+func Forbidden(ctx *gin.Context, msg string) {
+	ctx.JSON(http.StatusForbidden, Response{
+		Code:      403,
+		Message:   msg,
+		Data:      nil,
+		Timestamp: time.Now(),
+	})
+}

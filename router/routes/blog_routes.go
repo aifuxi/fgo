@@ -16,11 +16,11 @@ func RegisterBlogRoutes(api *gin.RouterGroup, svc service.UserService) {
 	routes := api.Group("/blogs")
 	routes.Use(middleware.Auth())
 	{
-		routes.GET("", middleware.RequirePermissions(svc, model.PermissionBlogList), h.List)
-		routes.POST("", middleware.RequirePermissions(svc, model.PermissionBlogCreate), h.Create)
+		routes.GET("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionBlogList), h.List)
+		routes.POST("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionBlogCreate), h.Create)
 
-		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionBlogView), h.FindByID)
-		routes.PUT("/:id", middleware.RequirePermissions(svc, model.PermissionBlogUpdate), h.UpdateByID)
-		routes.DELETE("/:id", middleware.RequirePermissions(svc, model.PermissionBlogDelete), h.DeleteByID)
+		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionBlogView), h.FindByID)
+		routes.PUT("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionBlogUpdate), h.UpdateByID)
+		routes.DELETE("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionBlogDelete), h.DeleteByID)
 	}
 }

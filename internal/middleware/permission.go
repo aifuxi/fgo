@@ -48,7 +48,7 @@ func RequirePermissions(userService service.UserService, permissions ...string) 
 		}
 
 		if !hasPermission {
-			response.BusinessError(c, "permission denied")
+			response.Forbidden(c, "permission denied")
 			c.Abort()
 			return
 		}

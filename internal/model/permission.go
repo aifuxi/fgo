@@ -9,6 +9,8 @@ type Permission struct {
 }
 
 const (
+	PermissionAdminAll = "admin:all"
+
 	PermissionUserList   = "user:list"
 	PermissionUserView   = "user:view"
 	PermissionUserCreate = "user:create"

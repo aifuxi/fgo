@@ -16,11 +16,11 @@ func RegisterRoleRoutes(api *gin.RouterGroup, svc service.UserService) {
 	routes := api.Group("/roles")
 	routes.Use(middleware.Auth())
 	{
-		routes.GET("", middleware.RequirePermissions(svc, model.PermissionRoleList), h.List)
-		routes.POST("", middleware.RequirePermissions(svc, model.PermissionRoleCreate), h.Create)
+		routes.GET("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionRoleList), h.List)
+		routes.POST("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionRoleCreate), h.Create)
 
-		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionRoleView), h.FindByID)
-		routes.PUT("/:id", middleware.RequirePermissions(svc, model.PermissionRoleUpdate), h.Update)
-		routes.DELETE("/:id", middleware.RequirePermissions(svc, model.PermissionRoleDelete), h.Delete)
+		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionRoleView), h.FindByID)
+		routes.PUT("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionRoleUpdate), h.Update)
+		routes.DELETE("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionRoleDelete), h.Delete)
 	}
 }

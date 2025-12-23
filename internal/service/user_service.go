@@ -53,7 +53,7 @@ func (s *userService) Register(ctx context.Context, req *dto.UserRegisterReq) er
 	}
 
 	// Find visitor role
-	visitorRole, err := s.roleRepo.FindByCode(ctx, model.VisitorRoleCode)
+	visitorRole, err := s.roleRepo.FindByCode(ctx, model.RoleCodeVisitor)
 	if err != nil {
 		return err
 	}

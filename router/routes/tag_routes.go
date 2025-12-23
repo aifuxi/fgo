@@ -16,11 +16,11 @@ func RegisterTagRoutes(api *gin.RouterGroup, svc service.UserService) {
 	routes := api.Group("/tags")
 	routes.Use(middleware.Auth())
 	{
-		routes.GET("", middleware.RequirePermissions(svc, model.PermissionTagList), h.List)
-		routes.POST("", middleware.RequirePermissions(svc, model.PermissionTagCreate), h.Create)
+		routes.GET("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionTagList), h.List)
+		routes.POST("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionTagCreate), h.Create)
 
-		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionTagView), h.FindByID)
-		routes.PUT("/:id", middleware.RequirePermissions(svc, model.PermissionTagUpdate), h.UpdateByID)
-		routes.DELETE("/:id", middleware.RequirePermissions(svc, model.PermissionTagDelete), h.DeleteByID)
+		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionTagView), h.FindByID)
+		routes.PUT("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionTagUpdate), h.UpdateByID)
+		routes.DELETE("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionTagDelete), h.DeleteByID)
 	}
 }

@@ -6,6 +6,7 @@ import (
 
 	"github.com/aifuxi/fgo/internal/model"
 	"github.com/aifuxi/fgo/pkg/db"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
@@ -23,6 +24,8 @@ func main() {
 	)
 
 	permissions := []model.Permission{
+		{Name: model.PermissionAdminAll, Code: model.PermissionAdminAll, Description: "超级管理员权限"},
+
 		{Name: model.PermissionBlogList, Code: model.PermissionBlogList, Description: "博客列表权限"},
 		{Name: model.PermissionBlogView, Code: model.PermissionBlogView, Description: "查看博客权限"},
 		{Name: model.PermissionBlogCreate, Code: model.PermissionBlogCreate, Description: "创建博客权限"},
@@ -60,7 +63,11 @@ func main() {
 	for _, p := range permissions {
 		perm := p
 		database.Where("code = ?", perm.Code).FirstOrCreate(&perm)
-		allPermissions = append(allPermissions, perm)
+
+		if perm.Code == model.PermissionAdminAll {
+			allPermissions = append(allPermissions, perm)
+			continue
+		}
 
 		if strings.HasSuffix(perm.Code, ":list") || strings.HasSuffix(perm.Code, ":view") {
 			visitorPermissions = append(visitorPermissions, perm)
@@ -68,16 +75,16 @@ func main() {
 	}
 
 	var adminRole model.Role
-	database.Where("code = ?", "admin").FirstOrCreate(&adminRole, model.Role{
-		Name:        "admin",
-		Code:        "admin",
+	database.Where("code = ?", model.RoleCodeAdmin).FirstOrCreate(&adminRole, model.Role{
+		Name:        model.RoleCodeAdmin,
+		Code:        model.RoleCodeAdmin,
 		Description: "管理员角色",
 	})
 
 	var visitorRole model.Role
-	database.Where("code = ?", "visitor").FirstOrCreate(&visitorRole, model.Role{
-		Name:        "visitor",
-		Code:        "visitor",
+	database.Where("code = ?", model.RoleCodeVisitor).FirstOrCreate(&visitorRole, model.Role{
+		Name:        model.RoleCodeVisitor,
+		Code:        model.RoleCodeVisitor,
 		Description: "访客角色",
 	})
 
@@ -87,5 +94,28 @@ func main() {
 
 	if err := database.Model(&visitorRole).Association("Permissions").Replace(visitorPermissions); err != nil {
 		log.Fatalf("Failed to replace visitor role permissions: %v", err)
+	}
+
+	// 默认新建admin用户
+	defaultAdmin := &model.User{
+		Nickname: "admin",
+		Email:    "admin@example.com",
+		Password: "123456",
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(defaultAdmin.Password), bcrypt.DefaultCost)
+	if err != nil {
+		log.Fatalf("Failed to hash default admin password: %v", err)
+	}
+	defaultAdmin.Password = string(hashedPassword)
+
+	if err := database.Where("email = ?", defaultAdmin.Email).FirstOrCreate(defaultAdmin).Error; err != nil {
+		log.Fatalf("Failed to create default admin user: %v", err)
+	}
+
+	// 关联admin角色
+	if err := database.Model(defaultAdmin).Association("Roles").Replace(&adminRole); err != nil {
+		log.Fatalf("Failed to append admin role to default admin user: %v", err)
 	}
 }

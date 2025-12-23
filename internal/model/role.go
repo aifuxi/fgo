@@ -10,6 +10,6 @@ type Role struct {
 }
 
 const (
-	AdminRoleCode   = "admin"
-	VisitorRoleCode = "visitor"
+	RoleCodeAdmin   = "admin"
+	RoleCodeVisitor = "visitor"
 )
