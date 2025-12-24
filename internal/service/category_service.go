@@ -12,9 +12,9 @@ import (
 type CategoryService interface {
 	Create(ctx context.Context, req *dto.CategoryCreateReq) error
 	List(ctx context.Context, req *dto.CategoryListReq) ([]*model.Category, int64, error)
-	FindByID(ctx context.Context, id uint) (*model.Category, error)
-	UpdateByID(ctx context.Context, id uint, req *dto.CategoryUpdateReq) error
-	DeleteByID(ctx context.Context, id uint) error
+	FindByID(ctx context.Context, id int64) (*model.Category, error)
+	UpdateByID(ctx context.Context, id int64, req *dto.CategoryUpdateReq) error
+	DeleteByID(ctx context.Context, id int64) error
 }
 
 type categoryService struct {
@@ -70,7 +70,7 @@ func (s *categoryService) List(ctx context.Context, req *dto.CategoryListReq) ([
 	})
 }
 
-func (s *categoryService) FindByID(ctx context.Context, id uint) (*model.Category, error) {
+func (s *categoryService) FindByID(ctx context.Context, id int64) (*model.Category, error) {
 	category, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -81,7 +81,7 @@ func (s *categoryService) FindByID(ctx context.Context, id uint) (*model.Categor
 	return category, nil
 }
 
-func (s *categoryService) DeleteByID(ctx context.Context, id uint) error {
+func (s *categoryService) DeleteByID(ctx context.Context, id int64) error {
 	// Check if category exists
 	category, err := s.repo.FindByID(ctx, id)
 	if err != nil {
@@ -94,7 +94,7 @@ func (s *categoryService) DeleteByID(ctx context.Context, id uint) error {
 	return s.repo.DeleteByID(ctx, id)
 }
 
-func (s *categoryService) UpdateByID(ctx context.Context, id uint, req *dto.CategoryUpdateReq) error {
+func (s *categoryService) UpdateByID(ctx context.Context, id int64, req *dto.CategoryUpdateReq) error {
 	// Check if category exists
 	category, err := s.repo.FindByID(ctx, id)
 	if err != nil {

@@ -17,9 +17,9 @@ var (
 
 type RoleService interface {
 	Create(ctx context.Context, req *dto.RoleCreateReq) error
-	Update(ctx context.Context, id uint, req *dto.RoleUpdateReq) error
-	Delete(ctx context.Context, id uint) error
-	FindByID(ctx context.Context, id uint) (*dto.RoleResp, error)
+	Update(ctx context.Context, id int64, req *dto.RoleUpdateReq) error
+	Delete(ctx context.Context, id int64) error
+	FindByID(ctx context.Context, id int64) (*dto.RoleResp, error)
 	List(ctx context.Context, req *dto.RoleListReq) (*dto.RoleListResp, error)
 }
 
@@ -59,7 +59,7 @@ func (s *roleService) Create(ctx context.Context, req *dto.RoleCreateReq) error 
 	return s.repo.Create(ctx, role)
 }
 
-func (s *roleService) Update(ctx context.Context, id uint, req *dto.RoleUpdateReq) error {
+func (s *roleService) Update(ctx context.Context, id int64, req *dto.RoleUpdateReq) error {
 	role, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -97,7 +97,7 @@ func (s *roleService) Update(ctx context.Context, id uint, req *dto.RoleUpdateRe
 	return s.repo.Update(ctx, role)
 }
 
-func (s *roleService) Delete(ctx context.Context, id uint) error {
+func (s *roleService) Delete(ctx context.Context, id int64) error {
 	role, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -109,7 +109,7 @@ func (s *roleService) Delete(ctx context.Context, id uint) error {
 	return s.repo.Delete(ctx, id)
 }
 
-func (s *roleService) FindByID(ctx context.Context, id uint) (*dto.RoleResp, error) {
+func (s *roleService) FindByID(ctx context.Context, id int64) (*dto.RoleResp, error) {
 	role, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err

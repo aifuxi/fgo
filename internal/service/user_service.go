@@ -14,10 +14,10 @@ import (
 type UserService interface {
 	Register(ctx context.Context, req *dto.UserRegisterReq) error
 	Login(ctx context.Context, req *dto.UserLoginReq) (string, error)
-	Update(ctx context.Context, id uint, req *dto.UserUpdateReq) error
+	Update(ctx context.Context, id int64, req *dto.UserUpdateReq) error
 	List(ctx context.Context, req *dto.UserListReq) (*dto.UserListResp, error)
-	FindByID(ctx context.Context, id uint) (*dto.UserResp, error)
-	DeleteByID(ctx context.Context, id uint) error
+	FindByID(ctx context.Context, id int64) (*dto.UserResp, error)
+	DeleteByID(ctx context.Context, id int64) error
 }
 
 type userService struct {
@@ -97,7 +97,7 @@ func (s *userService) Login(ctx context.Context, req *dto.UserLoginReq) (string,
 	return token, nil
 }
 
-func (s *userService) Update(ctx context.Context, id uint, req *dto.UserUpdateReq) error {
+func (s *userService) Update(ctx context.Context, id int64, req *dto.UserUpdateReq) error {
 	user, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -165,7 +165,7 @@ func convertToUserRespList(users []*model.User) []*dto.UserResp {
 	return userRespList
 }
 
-func (s *userService) FindByID(ctx context.Context, id uint) (*dto.UserResp, error) {
+func (s *userService) FindByID(ctx context.Context, id int64) (*dto.UserResp, error) {
 	user, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -183,7 +183,7 @@ func (s *userService) FindByID(ctx context.Context, id uint) (*dto.UserResp, err
 	}, nil
 }
 
-func (s *userService) DeleteByID(ctx context.Context, id uint) error {
+func (s *userService) DeleteByID(ctx context.Context, id int64) error {
 	user, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return err

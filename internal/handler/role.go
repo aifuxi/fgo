@@ -39,7 +39,7 @@ func (h *RoleHandler) Create(c *gin.Context) {
 
 func (h *RoleHandler) Update(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		response.ParamError(c, "Invalid role ID")
 		return
@@ -51,7 +51,7 @@ func (h *RoleHandler) Update(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.Update(c, uint(id), &req); err != nil {
+	if err := h.svc.Update(c, int64(id), &req); err != nil {
 		if errors.Is(err, service.ErrRoleNotFound) {
 			response.BusinessError(c, err.Error())
 			return
@@ -69,13 +69,13 @@ func (h *RoleHandler) Update(c *gin.Context) {
 
 func (h *RoleHandler) Delete(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		response.ParamError(c, "Invalid role ID")
 		return
 	}
 
-	if err := h.svc.Delete(c, uint(id)); err != nil {
+	if err := h.svc.Delete(c, int64(id)); err != nil {
 		if errors.Is(err, service.ErrRoleNotFound) {
 			response.BusinessError(c, err.Error())
 			return
@@ -89,13 +89,13 @@ func (h *RoleHandler) Delete(c *gin.Context) {
 
 func (h *RoleHandler) FindByID(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 32)
+	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
 		response.ParamError(c, "Invalid role ID")
 		return
 	}
 
-	role, err := h.svc.FindByID(c, uint(id))
+	role, err := h.svc.FindByID(c, int64(id))
 	if err != nil {
 		if errors.Is(err, service.ErrRoleNotFound) {
 			response.BusinessError(c, err.Error())

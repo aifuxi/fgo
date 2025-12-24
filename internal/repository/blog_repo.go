@@ -16,18 +16,18 @@ type BlogListOption struct {
 	Slug       string
 	SortBy     string
 	Order      string
-	CategoryID uint
-	TagIDs     []uint
+	CategoryID int64
+	TagIDs     []int64
 	Published  *bool
 }
 
 type BlogRepository interface {
 	Create(ctx context.Context, blog *model.Blog) error
 	FindBySlug(ctx context.Context, slug string) (*model.Blog, error)
-	FindByID(ctx context.Context, id uint) (*model.Blog, error)
+	FindByID(ctx context.Context, id int64) (*model.Blog, error)
 	FindByTitle(ctx context.Context, title string) (*model.Blog, error)
 	List(ctx context.Context, option BlogListOption) ([]*model.Blog, int64, error)
-	DeleteByID(ctx context.Context, id uint) error
+	DeleteByID(ctx context.Context, id int64) error
 	Update(ctx context.Context, blog *model.Blog) error
 }
 
@@ -135,7 +135,7 @@ func (r *blogRepo) List(ctx context.Context, option BlogListOption) ([]*model.Bl
 	return blogs, total, nil
 }
 
-func (r *blogRepo) FindByID(ctx context.Context, id uint) (*model.Blog, error) {
+func (r *blogRepo) FindByID(ctx context.Context, id int64) (*model.Blog, error) {
 	var blog model.Blog
 	if err := r.db.WithContext(ctx).Preload("Category").Preload("Tags").First(&blog, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -168,6 +168,6 @@ func (r *blogRepo) FindByTitle(ctx context.Context, title string) (*model.Blog, 
 	return &blog, nil
 }
 
-func (r *blogRepo) DeleteByID(ctx context.Context, id uint) error {
+func (r *blogRepo) DeleteByID(ctx context.Context, id int64) error {
 	return r.db.WithContext(ctx).Delete(&model.Blog{}, id).Error
 }

@@ -12,9 +12,9 @@ import (
 type BlogService interface {
 	Create(ctx context.Context, req *dto.BlogCreateReq) error
 	List(ctx context.Context, req *dto.BlogListReq) ([]*model.Blog, int64, error)
-	FindByID(ctx context.Context, id uint) (*model.Blog, error)
-	UpdateByID(ctx context.Context, id uint, req *dto.BlogUpdateReq) error
-	DeleteByID(ctx context.Context, id uint) error
+	FindByID(ctx context.Context, id int64) (*model.Blog, error)
+	UpdateByID(ctx context.Context, id int64, req *dto.BlogUpdateReq) error
+	DeleteByID(ctx context.Context, id int64) error
 }
 
 type blogService struct {
@@ -98,7 +98,7 @@ func (s *blogService) List(ctx context.Context, req *dto.BlogListReq) ([]*model.
 	})
 }
 
-func (s *blogService) FindByID(ctx context.Context, id uint) (*model.Blog, error) {
+func (s *blogService) FindByID(ctx context.Context, id int64) (*model.Blog, error) {
 	blog, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func (s *blogService) FindByID(ctx context.Context, id uint) (*model.Blog, error
 	return blog, nil
 }
 
-func (s *blogService) DeleteByID(ctx context.Context, id uint) error {
+func (s *blogService) DeleteByID(ctx context.Context, id int64) error {
 	// Check if blog exists
 	blog, err := s.repo.FindByID(ctx, id)
 	if err != nil {
@@ -122,7 +122,7 @@ func (s *blogService) DeleteByID(ctx context.Context, id uint) error {
 	return s.repo.DeleteByID(ctx, id)
 }
 
-func (s *blogService) UpdateByID(ctx context.Context, id uint, req *dto.BlogUpdateReq) error {
+func (s *blogService) UpdateByID(ctx context.Context, id int64, req *dto.BlogUpdateReq) error {
 	// Check if blog exists
 	blog, err := s.repo.FindByID(ctx, id)
 	if err != nil {

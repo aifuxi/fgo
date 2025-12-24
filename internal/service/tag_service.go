@@ -12,9 +12,9 @@ import (
 type TagService interface {
 	Create(ctx context.Context, req dto.TagCreateReq) (*model.Tag, error)
 	List(ctx context.Context, req dto.TagListReq) ([]*model.Tag, int64, error)
-	FindByID(ctx context.Context, id uint) (*model.Tag, error)
-	UpdateByID(ctx context.Context, id uint, req dto.TagUpdateReq) (*model.Tag, error)
-	DeleteByID(ctx context.Context, id uint) error
+	FindByID(ctx context.Context, id int64) (*model.Tag, error)
+	UpdateByID(ctx context.Context, id int64, req dto.TagUpdateReq) (*model.Tag, error)
+	DeleteByID(ctx context.Context, id int64) error
 }
 
 type tagService struct {
@@ -83,7 +83,7 @@ func (s *tagService) List(ctx context.Context, req dto.TagListReq) ([]*model.Tag
 	return tags, total, nil
 }
 
-func (s *tagService) FindByID(ctx context.Context, id uint) (*model.Tag, error) {
+func (s *tagService) FindByID(ctx context.Context, id int64) (*model.Tag, error) {
 	tag, err := s.tagRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func (s *tagService) FindByID(ctx context.Context, id uint) (*model.Tag, error) 
 	return tag, nil
 }
 
-func (s *tagService) DeleteByID(ctx context.Context, id uint) error {
+func (s *tagService) DeleteByID(ctx context.Context, id int64) error {
 	tag, err := s.tagRepo.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -109,7 +109,7 @@ func (s *tagService) DeleteByID(ctx context.Context, id uint) error {
 	return s.tagRepo.DeleteByID(ctx, id)
 }
 
-func (s *tagService) UpdateByID(ctx context.Context, id uint, req dto.TagUpdateReq) (*model.Tag, error) {
+func (s *tagService) UpdateByID(ctx context.Context, id int64, req dto.TagUpdateReq) (*model.Tag, error) {
 	tag, err := s.tagRepo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err

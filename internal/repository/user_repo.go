@@ -19,9 +19,9 @@ type UserRepository interface {
 	Create(ctx context.Context, user *model.User) error
 	Update(ctx context.Context, user *model.User) error
 	List(ctx context.Context, option UserListOption) ([]*model.User, int64, error)
-	FindByID(ctx context.Context, id uint) (*model.User, error)
+	FindByID(ctx context.Context, id int64) (*model.User, error)
 	FindByEmail(ctx context.Context, email string) (*model.User, error)
-	DeleteByID(ctx context.Context, id uint) error
+	DeleteByID(ctx context.Context, id int64) error
 }
 
 type userRepo struct {
@@ -89,7 +89,7 @@ func (r *userRepo) List(ctx context.Context, option UserListOption) ([]*model.Us
 	return users, total, nil
 }
 
-func (r *userRepo) FindByID(ctx context.Context, id uint) (*model.User, error) {
+func (r *userRepo) FindByID(ctx context.Context, id int64) (*model.User, error) {
 	var user model.User
 	if err := r.db.WithContext(ctx).Preload("Roles").Preload("Roles.Permissions").First(&user, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -111,6 +111,6 @@ func (r *userRepo) FindByEmail(ctx context.Context, email string) (*model.User, 
 	return &user, nil
 }
 
-func (r *userRepo) DeleteByID(ctx context.Context, id uint) error {
+func (r *userRepo) DeleteByID(ctx context.Context, id int64) error {
 	return r.db.WithContext(ctx).Delete(&model.User{}, id).Error
 }

@@ -21,10 +21,10 @@ type CategoryRepository interface {
 	Create(ctx context.Context, category *model.Category) error
 	Update(ctx context.Context, category *model.Category) error
 	List(ctx context.Context, option CategoryListOption) ([]*model.Category, int64, error)
-	FindByID(ctx context.Context, id uint) (*model.Category, error)
+	FindByID(ctx context.Context, id int64) (*model.Category, error)
 	FindBySlug(ctx context.Context, slug string) (*model.Category, error)
 	FindByName(ctx context.Context, name string) (*model.Category, error)
-	DeleteByID(ctx context.Context, id uint) error
+	DeleteByID(ctx context.Context, id int64) error
 }
 
 type categoryRepo struct {
@@ -85,7 +85,7 @@ func (r *categoryRepo) List(ctx context.Context, option CategoryListOption) ([]*
 	return categories, total, nil
 }
 
-func (r *categoryRepo) FindByID(ctx context.Context, id uint) (*model.Category, error) {
+func (r *categoryRepo) FindByID(ctx context.Context, id int64) (*model.Category, error) {
 	var category model.Category
 	if err := r.db.WithContext(ctx).First(&category, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -118,6 +118,6 @@ func (r *categoryRepo) FindByName(ctx context.Context, name string) (*model.Cate
 	return &category, nil
 }
 
-func (r *categoryRepo) DeleteByID(ctx context.Context, id uint) error {
+func (r *categoryRepo) DeleteByID(ctx context.Context, id int64) error {
 	return r.db.WithContext(ctx).Delete(&model.Category{}, id).Error
 }

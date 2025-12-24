@@ -14,9 +14,9 @@ type UserLoginReq struct {
 }
 
 type UserUpdateReq struct {
-	Nickname string `json:"nickname"`
-	Email    string `json:"email" binding:"omitempty,email"`
-	RoleIDs  []uint `json:"roleIDs"`
+	Nickname string  `json:"nickname"`
+	Email    string  `json:"email" binding:"omitempty,email"`
+	RoleIDs  []int64 `json:"roleIDs"`
 }
 
 type UserListReq struct {
@@ -38,5 +38,5 @@ type UserListResp struct {
 }
 
 type UserFindByIDReq struct {
-	ID uint `uri:"id" binding:"required"`
+	ID int64 `uri:"id" binding:"required"`
 }

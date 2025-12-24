@@ -19,7 +19,7 @@ type TagListResp struct {
 }
 
 type TagFindByIDReq struct {
-	ID uint `uri:"id" binding:"required"`
+	ID int64 `uri:"id" binding:"required"`
 }
 
 type TagUpdateReq struct {

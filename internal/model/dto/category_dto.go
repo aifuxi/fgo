@@ -26,5 +26,5 @@ type CategoryListResp struct {
 }
 
 type CategoryFindByIDReq struct {
-	ID uint `uri:"id" binding:"required"`
+	ID int64 `uri:"id" binding:"required"`
 }

@@ -20,7 +20,7 @@ func RequirePermissions(userService service.UserService, permissions ...string) 
 			return
 		}
 
-		userID, ok := v.(uint)
+		userID, ok := v.(int64)
 		if !ok {
 			response.Unauthorized(c, "invalid user id")
 			c.Abort()

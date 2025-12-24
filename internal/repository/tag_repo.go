@@ -21,10 +21,10 @@ type TagRepository interface {
 	Create(ctx context.Context, tag *model.Tag) (*model.Tag, error)
 	FindBySlug(ctx context.Context, slug string) (*model.Tag, error)
 	FindByName(ctx context.Context, name string) (*model.Tag, error)
-	FindByID(ctx context.Context, id uint) (*model.Tag, error)
+	FindByID(ctx context.Context, id int64) (*model.Tag, error)
 	List(ctx context.Context, option TagListOption) ([]*model.Tag, int64, error)
-	DeleteByID(ctx context.Context, id uint) error
-	UpdateByID(ctx context.Context, id uint, tag *model.Tag) (*model.Tag, error)
+	DeleteByID(ctx context.Context, id int64) error
+	UpdateByID(ctx context.Context, id int64, tag *model.Tag) (*model.Tag, error)
 }
 
 type tagRepository struct {
@@ -67,7 +67,7 @@ func (r *tagRepository) FindByName(ctx context.Context, name string) (*model.Tag
 	return &tag, nil
 }
 
-func (r *tagRepository) FindByID(ctx context.Context, id uint) (*model.Tag, error) {
+func (r *tagRepository) FindByID(ctx context.Context, id int64) (*model.Tag, error) {
 	var tag model.Tag
 	err := r.db.WithContext(ctx).Where("id = ?", id).First(&tag).Error
 	if err != nil {
@@ -123,11 +123,11 @@ func (r *tagRepository) List(ctx context.Context, option TagListOption) ([]*mode
 	return tags, total, nil
 }
 
-func (r *tagRepository) DeleteByID(ctx context.Context, id uint) error {
+func (r *tagRepository) DeleteByID(ctx context.Context, id int64) error {
 	return r.db.WithContext(ctx).Delete(&model.Tag{}, id).Error
 }
 
-func (r *tagRepository) UpdateByID(ctx context.Context, id uint, tag *model.Tag) (*model.Tag, error) {
+func (r *tagRepository) UpdateByID(ctx context.Context, id int64, tag *model.Tag) (*model.Tag, error) {
 	err := r.db.WithContext(ctx).Where("id = ?", id).Updates(tag).Error
 	if err != nil {
 		return nil, err

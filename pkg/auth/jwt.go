@@ -9,11 +9,11 @@ import (
 var jwtSecret = []byte("your_jwt_secret_key") // In production, use env variable
 
 type Claims struct {
-	UserID uint `json:"userID"`
+	UserID int64 `json:"userID"`
 	jwt.RegisteredClaims
 }
 
-func GenerateToken(userID uint) (string, error) {
+func GenerateToken(userID int64) (string, error) {
 	now := time.Now()
 	claims := Claims{
 		UserID: userID,
