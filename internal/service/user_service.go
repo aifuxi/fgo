@@ -15,6 +15,7 @@ type UserService interface {
 	Register(ctx context.Context, req *dto.UserRegisterReq) error
 	Login(ctx context.Context, req *dto.UserLoginReq) (string, error)
 	Update(ctx context.Context, id int64, req *dto.UserUpdateReq) error
+	Info(ctx context.Context, id int64) (*dto.UserResp, error)
 	List(ctx context.Context, req *dto.UserListReq) (*dto.UserListResp, error)
 	FindByID(ctx context.Context, id int64) (*dto.UserResp, error)
 	DeleteByID(ctx context.Context, id int64) error
@@ -134,6 +135,18 @@ func (s *userService) Update(ctx context.Context, id int64, req *dto.UserUpdateR
 	return s.repo.Update(ctx, user)
 }
 
+func (s *userService) Info(ctx context.Context, id int64) (*dto.UserResp, error) {
+	user, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if user == nil {
+		return nil, ErrUserNotFound
+	}
+
+	return convertToUserResp(user), nil
+}
+
 func (s *userService) List(ctx context.Context, req *dto.UserListReq) (*dto.UserListResp, error) {
 	users, total, err := s.repo.List(ctx, repository.UserListOption{
 		Page:     req.Page,
@@ -150,19 +163,6 @@ func (s *userService) List(ctx context.Context, req *dto.UserListReq) (*dto.User
 		Total: total,
 		Lists: userRespList,
 	}, nil
-}
-
-func convertToUserRespList(users []*model.User) []*dto.UserResp {
-	var userRespList []*dto.UserResp
-	for _, user := range users {
-		userRespList = append(userRespList, &dto.UserResp{
-			CommonModel: user.CommonModel,
-			Nickname:    user.Nickname,
-			Email:       user.Email,
-			Roles:       user.Roles,
-		})
-	}
-	return userRespList
 }
 
 func (s *userService) FindByID(ctx context.Context, id int64) (*dto.UserResp, error) {

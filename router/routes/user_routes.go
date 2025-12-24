@@ -15,6 +15,7 @@ func RegisterUserRoutes(api *gin.RouterGroup, svc service.UserService) {
 	routes.Use(middleware.Auth())
 	{
 		routes.GET("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionUserList), h.List)
+		routes.GET("/info", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionUserView), h.Info)
 
 		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionUserView), h.FindByID)
 		routes.PUT("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionUserUpdate), h.Update)

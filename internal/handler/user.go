@@ -79,6 +79,23 @@ func (h *UserHandler) FindByID(ctx *gin.Context) {
 	response.Success(ctx, user)
 }
 
+func (h *UserHandler) Info(ctx *gin.Context) {
+	// 从ctx取出用户ID
+	id := ctx.GetInt64("userID")
+	if id == 0 {
+		response.Unauthorized(ctx, "not login")
+		return
+	}
+
+	user, err := h.svc.Info(ctx, id)
+	if err != nil {
+		response.BusinessError(ctx, err.Error())
+		return
+	}
+
+	response.Success(ctx, user)
+}
+
 func (h *UserHandler) Update(ctx *gin.Context) {
 	var req dto.UserUpdateReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
