@@ -4,13 +4,24 @@ import (
 	"log"
 	"strings"
 
+	"github.com/aifuxi/fgo/config"
 	"github.com/aifuxi/fgo/internal/model"
 	"github.com/aifuxi/fgo/pkg/db"
+	"github.com/aifuxi/fgo/pkg/logger"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func main() {
-	db.InitMySQL()
+	if err := config.Init(); err != nil {
+		log.Fatalf("Failed to initialize config: %v", err)
+	}
+
+	logger.Init(config.AppConfig.Log)
+	logger.Log.Info("Configuration loaded successfully")
+
+	if err := db.Init(config.AppConfig.Database); err != nil {
+		logger.Sugar.Fatalf("Failed to initialize database: %v", err)
+	}
 
 	database := db.GetDB()
 
@@ -89,16 +100,16 @@ func main() {
 	})
 
 	if err := database.Model(&adminRole).Association("Permissions").Replace(allPermissions); err != nil {
-		log.Fatalf("Failed to replace admin role permissions: %v", err)
+		logger.Sugar.Fatalf("Failed to replace admin role permissions: %v", err)
 	}
 
 	if err := database.Model(&visitorRole).Association("Permissions").Replace(visitorPermissions); err != nil {
-		log.Fatalf("Failed to replace visitor role permissions: %v", err)
+		logger.Sugar.Fatalf("Failed to replace visitor role permissions: %v", err)
 	}
 
 	// 默认新建admin用户
 	defaultAdmin := &model.User{
-		Nickname: "admin",
+		Nickname: "超级管理员",
 		Email:    "admin@example.com",
 		Password: "123456",
 	}
@@ -106,16 +117,18 @@ func main() {
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(defaultAdmin.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Fatalf("Failed to hash default admin password: %v", err)
+		logger.Sugar.Fatalf("Failed to hash default admin password: %v", err)
 	}
 	defaultAdmin.Password = string(hashedPassword)
 
 	if err := database.Where("email = ?", defaultAdmin.Email).FirstOrCreate(defaultAdmin).Error; err != nil {
-		log.Fatalf("Failed to create default admin user: %v", err)
+		logger.Sugar.Fatalf("Failed to create default admin user: %v", err)
 	}
 
 	// 关联admin角色
 	if err := database.Model(defaultAdmin).Association("Roles").Replace(&adminRole); err != nil {
-		log.Fatalf("Failed to append admin role to default admin user: %v", err)
+		logger.Sugar.Fatalf("Failed to append admin role to default admin user: %v", err)
 	}
+
+	logger.Log.Info("Database migration completed successfully")
 }

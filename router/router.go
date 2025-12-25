@@ -9,14 +9,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Setup() *gin.Engine {
+func Init(version string) *gin.Engine {
 	router := gin.Default()
 
 	router.GET("/health", func(c *gin.Context) {
 		response.Success(c, gin.H{
-			"status": "ok",
-			// TODO 从配置文件中读取版本号
-			"version": "0.0.1",
+			"status":  "ok",
+			"version": version,
 		})
 	})
 

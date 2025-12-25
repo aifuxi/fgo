@@ -1,26 +1,34 @@
 package db
 
 import (
-	"log"
+	"fmt"
 
+	"github.com/aifuxi/fgo/config"
+	"github.com/aifuxi/fgo/pkg/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
 
-func InitMySQL() {
-	dsn := "root:123456@tcp(127.0.0.1:8306)/fgo?charset=utf8mb4&parseTime=True&loc=Local"
+func Init(cfg config.DatabaseConfig) error {
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		cfg.User,
+		cfg.Password,
+		cfg.Host,
+		cfg.Port,
+		cfg.DBName,
+	)
 
 	var err error
 
 	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatalf("Failed to connect to MySQL: %v", err)
-		return
+		return fmt.Errorf("failed to connect to MySQL: %w", err)
 	}
 
-	log.Println("Connected to MySQL")
+	logger.Log.Info("Connected to MySQL successfully")
+	return nil
 }
 
 func GetDB() *gorm.DB {

@@ -3,10 +3,9 @@ package auth
 import (
 	"time"
 
+	"github.com/aifuxi/fgo/config"
 	"github.com/golang-jwt/jwt/v5"
 )
-
-var jwtSecret = []byte("your_jwt_secret_key") // In production, use env variable
 
 type Claims struct {
 	UserID int64 `json:"userID"`
@@ -15,10 +14,11 @@ type Claims struct {
 
 func GenerateToken(userID int64) (string, error) {
 	now := time.Now()
+	expireTime := time.Duration(config.AppConfig.JWT.Expire) * time.Hour
 	claims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(expireTime)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 			Issuer:    "fgo",
@@ -26,12 +26,12 @@ func GenerateToken(userID int64) (string, error) {
 	}
 
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return tokenClaims.SignedString(jwtSecret)
+	return tokenClaims.SignedString([]byte(config.AppConfig.JWT.Secret))
 }
 
 func ParseToken(token string) (*Claims, error) {
-	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		return jwtSecret, nil
+	tokenClaims, err := jwt.ParseWithClaims(token, &Claims{}, func(token *jwt.Token) (any, error) {
+		return []byte(config.AppConfig.JWT.Secret), nil
 	})
 
 	if err != nil {
