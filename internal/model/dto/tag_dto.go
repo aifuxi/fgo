@@ -3,8 +3,9 @@ package dto
 import "github.com/aifuxi/fgo/internal/model"
 
 type TagCreateReq struct {
-	Name string `json:"name" binding:"required"`
-	Slug string `json:"slug" binding:"required"`
+	Name        string `json:"name" binding:"required"`
+	Slug        string `json:"slug" binding:"required"`
+	Description string `json:"description" binding:"required"`
 }
 
 type TagListReq struct {
@@ -23,6 +24,7 @@ type TagFindByIDReq struct {
 }
 
 type TagUpdateReq struct {
-	Name string `json:"name" binding:"required"`
-	Slug string `json:"slug" binding:"required"`
+	Name        string `json:"name" binding:"required"`
+	Slug        string `json:"slug" binding:"required"`
+	Description string `json:"description"`
 }

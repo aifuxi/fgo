@@ -11,7 +11,7 @@ type CategoryCreateReq struct {
 type CategoryUpdateReq struct {
 	Name        string `json:"name" binding:"required"`
 	Slug        string `json:"slug" binding:"required"`
-	Description string `json:"description"`
+	Description string `json:"description" binding:"required"`
 }
 
 type CategoryListReq struct {

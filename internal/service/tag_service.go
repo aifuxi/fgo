@@ -33,8 +33,9 @@ func NewTagService(tagRepo repository.TagRepository) TagService {
 
 func (s *tagService) Create(ctx context.Context, req dto.TagCreateReq) (*model.Tag, error) {
 	tag := &model.Tag{
-		Name: req.Name,
-		Slug: req.Slug,
+		Name:        req.Name,
+		Slug:        req.Slug,
+		Description: req.Description,
 	}
 
 	existNameTag, err := s.tagRepo.FindByName(ctx, req.Name)
@@ -121,6 +122,7 @@ func (s *tagService) UpdateByID(ctx context.Context, id int64, req dto.TagUpdate
 
 	tag.Name = req.Name
 	tag.Slug = req.Slug
+	tag.Description = req.Description
 
 	updatedTag, err := s.tagRepo.UpdateByID(ctx, id, tag)
 	if err != nil {
