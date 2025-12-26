@@ -16,8 +16,8 @@ type CategoryUpdateReq struct {
 
 type CategoryListReq struct {
 	ListReq
-	Name string `json:"name" form:"name"`
-	Slug string `json:"slug" form:"slug"`
+	Name string `json:"name" form:"name" `
+	Slug string `json:"slug" form:"slug" `
 }
 
 type CategoryListResp struct {

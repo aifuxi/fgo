@@ -21,8 +21,8 @@ type UserUpdateReq struct {
 
 type UserListReq struct {
 	ListReq
-	Nickname string `form:"nickname"`
-	Email    string `form:"email"`
+	Nickname string `json:"nickname" form:"nickname"`
+	Email    string `json:"email" form:"email"`
 }
 
 type UserResp struct {

@@ -9,8 +9,8 @@ type TagCreateReq struct {
 
 type TagListReq struct {
 	ListReq
-	Name string `json:"name" form:"name" binding:"omitempty"`
-	Slug string `json:"slug" form:"slug" binding:"omitempty"`
+	Name string `json:"name" form:"name" `
+	Slug string `json:"slug" form:"slug" `
 }
 
 type TagListResp struct {

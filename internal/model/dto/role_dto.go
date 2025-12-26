@@ -15,10 +15,10 @@ type RoleUpdateReq struct {
 }
 
 type RoleListReq struct {
-	Page     int    `form:"page,default=1" binding:"min=1"`
-	PageSize int    `form:"pageSize,default=10" binding:"min=1,max=100"`
-	Name     string `form:"name"`
-	Code     string `form:"code"`
+	Page     int    `json:"page" form:"page" binding:"min=1"`
+	PageSize int    `json:"pageSize" form:"pageSize" binding:"min=1,max=100"`
+	Name     string `json:"name" form:"name"`
+	Code     string `json:"code" form:"code"`
 }
 
 type RoleResp struct {
