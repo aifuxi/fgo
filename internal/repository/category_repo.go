@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/aifuxi/fgo/internal/model"
+	"github.com/aifuxi/fgo/pkg/logger"
 	"gorm.io/gorm"
 )
 
@@ -49,8 +50,9 @@ func (r *categoryRepo) List(ctx context.Context, option CategoryListOption) ([]*
 
 	query := r.db.WithContext(ctx).Model(&model.Category{})
 
+	logger.GetLoggerWithSkip(1).Infof("CategoryRepository.List: %v", option)
 	if option.Name != "" {
-		query = query.Where("name LIKE ?", "%"+option.Name+"%")
+		query = query.Where("name like ?", "%"+option.Name+"%")
 	}
 
 	if option.Slug != "" {
@@ -58,6 +60,7 @@ func (r *categoryRepo) List(ctx context.Context, option CategoryListOption) ([]*
 	}
 
 	if err := query.Count(&total).Error; err != nil {
+		logger.GetLoggerWithSkip(1).Errorf("CategoryRepository.Count: %v", err)
 		return nil, 0, err
 	}
 

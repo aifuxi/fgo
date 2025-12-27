@@ -1,25 +1,27 @@
 package dto
 
-import "github.com/aifuxi/fgo/internal/model"
+import (
+	"github.com/aifuxi/fgo/internal/model"
+)
 
 type BlogCreateReq struct {
-	Title       string  `json:"title" binding:"required"`
-	Slug        string  `json:"slug" binding:"required"`
-	Description string  `json:"description" binding:"required"`
-	Cover       string  `json:"cover"`
-	Content     string  `json:"content" binding:"required"`
-	Published   bool    `json:"published"`
-	CategoryID  int64   `json:"categoryID"`
-	TagIDs      []int64 `json:"tagIDs"`
+	Title       string           `json:"title" binding:"required"`
+	Slug        string           `json:"slug" binding:"required"`
+	Description string           `json:"description" binding:"required"`
+	Cover       string           `json:"cover"`
+	Content     string           `json:"content" binding:"required"`
+	Published   bool             `json:"published"`
+	CategoryID  int64            `json:"categoryID,string"`
+	TagIDs      StringInt64Slice `json:"tagIDs"`
 }
 
 type BlogListReq struct {
 	ListReq
-	Title           string  `json:"title" form:"title" binding:"omitempty"`
-	Slug            string  `json:"slug" form:"slug" binding:"omitempty"`
-	PublishedStatus string  `json:"publishedStatus" form:"published" binding:"omitempty,oneof=published unpublished"`
-	CategoryID      int64   `json:"categoryID" form:"categoryID" binding:"omitempty"`
-	TagIDs          []int64 `json:"tagIDs" form:"tagIDs" binding:"omitempty"`
+	Title           string           `json:"title" form:"title" binding:"omitempty"`
+	Slug            string           `json:"slug" form:"slug" binding:"omitempty"`
+	PublishedStatus string           `json:"publishedStatus" form:"published" binding:"omitempty,oneof=published unpublished"`
+	CategoryID      int64            `json:"categoryID,string" form:"categoryID" binding:"omitempty"`
+	TagIDs          StringInt64Slice `json:"tagIDs" form:"tagIDs" binding:"omitempty"`
 }
 
 type BlogListResp struct {
@@ -32,12 +34,12 @@ type BlogFindByIDReq struct {
 }
 
 type BlogUpdateReq struct {
-	Title       string  `json:"title" binding:"required"`
-	Slug        string  `json:"slug" binding:"required"`
-	Description string  `json:"description" binding:"required"`
-	Cover       string  `json:"cover"`
-	Content     string  `json:"content" binding:"required"`
-	Published   bool    `json:"published"`
-	CategoryID  int64   `json:"categoryID"`
-	TagIDs      []int64 `json:"tagIDs"`
+	Title       string           `json:"title" binding:"required"`
+	Slug        string           `json:"slug" binding:"required"`
+	Description string           `json:"description" binding:"required"`
+	Cover       string           `json:"cover"`
+	Content     string           `json:"content" binding:"required"`
+	Published   bool             `json:"published"`
+	CategoryID  int64            `json:"categoryID,string"`
+	TagIDs      StringInt64Slice `json:"tagIDs"`
 }
