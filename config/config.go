@@ -2,6 +2,9 @@ package config
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strings"
 
 	"github.com/spf13/viper"
 )
@@ -45,16 +48,32 @@ type LogConfig struct {
 var AppConfig *Config
 
 func Init() error {
-	viper.SetConfigName("app")
-	viper.SetConfigType("yml")
-	viper.AddConfigPath("config")
-	viper.AddConfigPath(".")
-
-	if err := viper.ReadInConfig(); err != nil {
-		return fmt.Errorf("error reading config file: %w", err)
+	env := strings.ToLower(strings.TrimSpace(os.Getenv("APP_ENV")))
+	if env == "" {
+		env = "dev"
 	}
 
-	if err := viper.Unmarshal(&AppConfig); err != nil {
+	log.Printf("loading config file: app.%s.yml \n", env)
+
+	v := viper.New()
+	v.SetConfigType("yml")
+	v.AddConfigPath("config")
+	v.AddConfigPath(".")
+
+	v.SetConfigName(fmt.Sprintf("app.%s", env))
+
+	if err := v.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			v.SetConfigName("app")
+			if err := v.ReadInConfig(); err != nil {
+				return fmt.Errorf("error reading config file: %w", err)
+			}
+		} else {
+			return fmt.Errorf("error reading config file: %w", err)
+		}
+	}
+
+	if err := v.Unmarshal(&AppConfig); err != nil {
 		return fmt.Errorf("unable to decode into struct: %w", err)
 	}
 

@@ -30,3 +30,8 @@ tmp/
 
 # logs
 logs/
+
+# config
+config/app.yml
+config/app.prod.yml
+config/app.dev.yml
