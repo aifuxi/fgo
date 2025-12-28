@@ -7,6 +7,7 @@ import (
 	"github.com/aifuxi/fgo/config"
 	"github.com/aifuxi/fgo/pkg/db"
 	"github.com/aifuxi/fgo/pkg/logger"
+	"github.com/aifuxi/fgo/pkg/upload"
 	"github.com/aifuxi/fgo/router"
 	"github.com/gin-gonic/gin"
 )
@@ -24,6 +25,8 @@ func main() {
 	if err := db.Init(config.AppConfig.Database); err != nil {
 		logger.Sugar.Fatalf("Failed to initialize database: %v", err)
 	}
+
+	upload.Init(config.AppConfig.OSS)
 
 	router := router.Init(config.AppConfig.Server.Version)
 

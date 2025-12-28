@@ -32,6 +32,7 @@ func Init(version string) *gin.Engine {
 	routes.RegisterTagRoutes(apiV1, userService)
 	routes.RegisterBlogRoutes(apiV1, userService)
 	routes.RegisterCategoryRoutes(apiV1, userService)
+	routes.RegisterUploadRoutes(apiV1)
 
 	return router
 }
