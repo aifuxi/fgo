@@ -29,6 +29,6 @@ type RoleResp struct {
 }
 
 type RoleListResp struct {
-	Total int64       `json:"total"`
-	Lists []*RoleResp `json:"lists"`
+	Total int64      `json:"total"`
+	Lists []RoleResp `json:"lists"`
 }

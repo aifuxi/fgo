@@ -33,8 +33,8 @@ type UserResp struct {
 }
 
 type UserListResp struct {
-	Total int64       `json:"total"`
-	Lists []*UserResp `json:"lists"`
+	Total int64      `json:"total"`
+	Lists []UserResp `json:"lists"`
 }
 
 type UserFindByIDReq struct {

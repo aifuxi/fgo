@@ -34,5 +34,11 @@ func Init(version string) *gin.Engine {
 	routes.RegisterCategoryRoutes(apiV1, userService)
 	routes.RegisterUploadRoutes(apiV1)
 
+	publicApiV1 := apiV1.Group("/public")
+
+	routes.RegisterPublicBlogRoutes(publicApiV1)
+	routes.RegisterPublicCategoryRoutes(publicApiV1)
+	routes.RegisterPublicTagRoutes(publicApiV1)
+
 	return router
 }

@@ -23,7 +23,7 @@ func (h *CategoryHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	err := h.svc.Create(ctx, &req)
+	err := h.svc.Create(ctx, req)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
@@ -41,16 +41,22 @@ func (h *CategoryHandler) List(ctx *gin.Context) {
 		return
 	}
 
-	lists, total, err := h.svc.List(ctx, &req)
+	lists, total, err := h.svc.List(ctx, req, true)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return
 	}
 
+	var categories []dto.CategoryResp
+
+	for _, category := range lists {
+		categories = append(categories, convertCategoryResp(category))
+	}
+
 	response.Success(ctx, dto.CategoryListResp{
 		Total: total,
-		Lists: lists,
+		Lists: categories,
 	})
 }
 
@@ -62,7 +68,7 @@ func (h *CategoryHandler) FindByID(ctx *gin.Context) {
 		return
 	}
 
-	category, err := h.svc.FindByID(ctx, req.ID)
+	category, err := h.svc.FindByID(ctx, req.ID, false)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())

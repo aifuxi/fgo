@@ -22,13 +22,13 @@ type BlogListOption struct {
 }
 
 type BlogRepository interface {
-	Create(ctx context.Context, blog *model.Blog) error
+	Create(ctx context.Context, blog model.Blog) error
 	FindBySlug(ctx context.Context, slug string) (*model.Blog, error)
 	FindByID(ctx context.Context, id int64) (*model.Blog, error)
 	FindByTitle(ctx context.Context, title string) (*model.Blog, error)
-	List(ctx context.Context, option BlogListOption) ([]*model.Blog, int64, error)
+	List(ctx context.Context, option BlogListOption) ([]model.Blog, int64, error)
 	DeleteByID(ctx context.Context, id int64) error
-	Update(ctx context.Context, blog *model.Blog) error
+	Update(ctx context.Context, blog model.Blog) error
 }
 
 type blogRepo struct {
@@ -39,7 +39,7 @@ func NewBlogRepository(db *gorm.DB) BlogRepository {
 	return &blogRepo{db: db}
 }
 
-func (r *blogRepo) Create(ctx context.Context, blog *model.Blog) error {
+func (r *blogRepo) Create(ctx context.Context, blog model.Blog) error {
 	if blog.Published {
 		now := time.Now()
 		blog.PublishedAt = &now
@@ -47,14 +47,14 @@ func (r *blogRepo) Create(ctx context.Context, blog *model.Blog) error {
 		blog.PublishedAt = nil
 	}
 
-	if err := r.db.WithContext(ctx).Create(blog).Error; err != nil {
+	if err := r.db.WithContext(ctx).Create(&blog).Error; err != nil {
 		return err
 	}
 	// 重新加载关联数据，包括 Category 和 Tags
-	return r.db.WithContext(ctx).Preload("Category").Preload("Tags").First(blog, blog.ID).Error
+	return r.db.WithContext(ctx).Preload("Category").Preload("Tags").First(&blog, blog.ID).Error
 }
 
-func (r *blogRepo) Update(ctx context.Context, blog *model.Blog) error {
+func (r *blogRepo) Update(ctx context.Context, blog model.Blog) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if blog.Published {
 			now := time.Now()
@@ -64,22 +64,22 @@ func (r *blogRepo) Update(ctx context.Context, blog *model.Blog) error {
 		}
 
 		// 更新基本字段
-		if err := tx.Model(blog).Updates(blog).Error; err != nil {
+		if err := tx.Model(&model.Blog{}).Updates(&blog).Error; err != nil {
 			return err
 		}
 
 		// 更新标签关联
-		if err := tx.Model(blog).Association("Tags").Replace(blog.Tags); err != nil {
+		if err := tx.Model(&model.Blog{}).Association("Tags").Replace(blog.Tags); err != nil {
 			return err
 		}
 
 		// 重新加载关联数据
-		return tx.Preload("Category").Preload("Tags").First(blog, blog.ID).Error
+		return tx.Preload("Category").Preload("Tags").First(&blog, blog.ID).Error
 	})
 }
 
-func (r *blogRepo) List(ctx context.Context, option BlogListOption) ([]*model.Blog, int64, error) {
-	var blogs []*model.Blog
+func (r *blogRepo) List(ctx context.Context, option BlogListOption) ([]model.Blog, int64, error) {
+	var blogs []model.Blog
 	var total int64
 
 	query := r.db.WithContext(ctx).Model(&model.Blog{}).Preload("Category").Preload("Tags")

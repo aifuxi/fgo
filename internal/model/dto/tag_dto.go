@@ -14,9 +14,14 @@ type TagListReq struct {
 	Slug string `json:"slug" form:"slug" `
 }
 
+type TagResp struct {
+	model.Tag
+	BlogCount int64 `json:"blogCount"`
+}
+
 type TagListResp struct {
-	Total int64        `json:"total"`
-	Lists []*model.Tag `json:"lists"`
+	Total int64     `json:"total"`
+	Lists []TagResp `json:"lists"`
 }
 
 type TagFindByIDReq struct {

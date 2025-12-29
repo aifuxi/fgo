@@ -22,7 +22,7 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 		return
 	}
 
-	err := h.svc.Register(ctx, &req)
+	err := h.svc.Register(ctx, req)
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return
@@ -38,7 +38,7 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 		return
 	}
 
-	token, err := h.svc.Login(ctx, &req)
+	token, err := h.svc.Login(ctx, req)
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return
@@ -54,7 +54,7 @@ func (h *UserHandler) List(ctx *gin.Context) {
 		return
 	}
 
-	resp, err := h.svc.List(ctx, &req)
+	resp, err := h.svc.List(ctx, req)
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return
@@ -109,7 +109,7 @@ func (h *UserHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	err := h.svc.Update(ctx, idReq.ID, &req)
+	err := h.svc.Update(ctx, idReq.ID, req)
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return

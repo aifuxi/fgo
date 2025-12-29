@@ -10,9 +10,10 @@ import (
 )
 
 type CategoryService interface {
-	Create(ctx context.Context, req *dto.CategoryCreateReq) error
-	List(ctx context.Context, req *dto.CategoryListReq) ([]*model.Category, int64, error)
-	FindByID(ctx context.Context, id int64) (*model.Category, error)
+	Create(ctx context.Context, req dto.CategoryCreateReq) error
+	List(ctx context.Context, req dto.CategoryListReq, withBlog bool) ([]model.Category, int64, error)
+	FindByID(ctx context.Context, id int64, withBlog bool) (*model.Category, error)
+	FindBySlug(ctx context.Context, slug string, withBlog bool) (*model.Category, error)
 	UpdateByID(ctx context.Context, id int64, req *dto.CategoryUpdateReq) error
 	DeleteByID(ctx context.Context, id int64) error
 }
@@ -31,9 +32,9 @@ func NewCategoryService(repo repository.CategoryRepository) CategoryService {
 	return &categoryService{repo: repo}
 }
 
-func (s *categoryService) Create(ctx context.Context, req *dto.CategoryCreateReq) error {
+func (s *categoryService) Create(ctx context.Context, req dto.CategoryCreateReq) error {
 	// Check if slug exists
-	existingCategory, err := s.repo.FindBySlug(ctx, req.Slug)
+	existingCategory, err := s.repo.FindBySlug(ctx, req.Slug, false)
 	if err != nil {
 		return err
 	}
@@ -50,7 +51,7 @@ func (s *categoryService) Create(ctx context.Context, req *dto.CategoryCreateReq
 		return ErrCategoryNameExists
 	}
 
-	category := &model.Category{
+	category := model.Category{
 		Name:        req.Name,
 		Slug:        req.Slug,
 		Description: req.Description,
@@ -59,7 +60,7 @@ func (s *categoryService) Create(ctx context.Context, req *dto.CategoryCreateReq
 	return s.repo.Create(ctx, category)
 }
 
-func (s *categoryService) List(ctx context.Context, req *dto.CategoryListReq) ([]*model.Category, int64, error) {
+func (s *categoryService) List(ctx context.Context, req dto.CategoryListReq, withBlog bool) ([]model.Category, int64, error) {
 	return s.repo.List(ctx, repository.CategoryListOption{
 		Page:     req.Page,
 		PageSize: req.PageSize,
@@ -67,11 +68,23 @@ func (s *categoryService) List(ctx context.Context, req *dto.CategoryListReq) ([
 		Slug:     req.Slug,
 		SortBy:   req.SortBy,
 		Order:    req.Order,
+		WithBlog: withBlog,
 	})
 }
 
-func (s *categoryService) FindByID(ctx context.Context, id int64) (*model.Category, error) {
-	category, err := s.repo.FindByID(ctx, id)
+func (s *categoryService) FindByID(ctx context.Context, id int64, withBlog bool) (*model.Category, error) {
+	category, err := s.repo.FindByID(ctx, id, withBlog)
+	if err != nil {
+		return nil, err
+	}
+	if category == nil {
+		return nil, ErrCategoryNotFound
+	}
+	return category, nil
+}
+
+func (s *categoryService) FindBySlug(ctx context.Context, slug string, withBlog bool) (*model.Category, error) {
+	category, err := s.repo.FindBySlug(ctx, slug, withBlog)
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +96,7 @@ func (s *categoryService) FindByID(ctx context.Context, id int64) (*model.Catego
 
 func (s *categoryService) DeleteByID(ctx context.Context, id int64) error {
 	// Check if category exists
-	category, err := s.repo.FindByID(ctx, id)
+	category, err := s.repo.FindByID(ctx, id, false)
 	if err != nil {
 		return err
 	}
@@ -96,7 +109,7 @@ func (s *categoryService) DeleteByID(ctx context.Context, id int64) error {
 
 func (s *categoryService) UpdateByID(ctx context.Context, id int64, req *dto.CategoryUpdateReq) error {
 	// Check if category exists
-	category, err := s.repo.FindByID(ctx, id)
+	category, err := s.repo.FindByID(ctx, id, false)
 	if err != nil {
 		return err
 	}
@@ -106,7 +119,7 @@ func (s *categoryService) UpdateByID(ctx context.Context, id int64, req *dto.Cat
 
 	// Check if slug exists (if changed)
 	if req.Slug != category.Slug {
-		existingCategory, err := s.repo.FindBySlug(ctx, req.Slug)
+		existingCategory, err := s.repo.FindBySlug(ctx, req.Slug, false)
 		if err != nil {
 			return err
 		}
@@ -130,5 +143,5 @@ func (s *categoryService) UpdateByID(ctx context.Context, id int64, req *dto.Cat
 	category.Slug = req.Slug
 	category.Description = req.Description
 
-	return s.repo.Update(ctx, category)
+	return s.repo.Update(ctx, *category)
 }

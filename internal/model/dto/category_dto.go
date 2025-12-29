@@ -20,9 +20,14 @@ type CategoryListReq struct {
 	Slug string `json:"slug" form:"slug" `
 }
 
+type CategoryResp struct {
+	model.Category
+	BlogCount int64 `json:"blogCount"`
+}
+
 type CategoryListResp struct {
-	Total int64             `json:"total"`
-	Lists []*model.Category `json:"lists"`
+	Total int64          `json:"total"`
+	Lists []CategoryResp `json:"lists"`
 }
 
 type CategoryFindByIDReq struct {

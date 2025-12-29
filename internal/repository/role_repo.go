@@ -16,13 +16,13 @@ type RoleListOption struct {
 }
 
 type RoleRepository interface {
-	Create(ctx context.Context, role *model.Role) error
-	Update(ctx context.Context, role *model.Role) error
+	Create(ctx context.Context, role model.Role) error
+	Update(ctx context.Context, role model.Role) error
 	Delete(ctx context.Context, id int64) error
 	FindByID(ctx context.Context, id int64) (*model.Role, error)
 	FindByName(ctx context.Context, name string) (*model.Role, error)
 	FindByCode(ctx context.Context, code string) (*model.Role, error)
-	List(ctx context.Context, opt RoleListOption) ([]*model.Role, int64, error)
+	List(ctx context.Context, opt RoleListOption) ([]model.Role, int64, error)
 }
 
 type roleRepository struct {
@@ -33,11 +33,11 @@ func NewRoleRepository(db *gorm.DB) RoleRepository {
 	return &roleRepository{db: db}
 }
 
-func (r *roleRepository) Create(ctx context.Context, role *model.Role) error {
+func (r *roleRepository) Create(ctx context.Context, role model.Role) error {
 	return r.db.WithContext(ctx).Create(role).Error
 }
 
-func (r *roleRepository) Update(ctx context.Context, role *model.Role) error {
+func (r roleRepository) Update(ctx context.Context, role model.Role) error {
 	return r.db.WithContext(ctx).Save(role).Error
 }
 
@@ -78,8 +78,8 @@ func (r *roleRepository) FindByCode(ctx context.Context, code string) (*model.Ro
 	return &role, nil
 }
 
-func (r *roleRepository) List(ctx context.Context, opt RoleListOption) ([]*model.Role, int64, error) {
-	var roles []*model.Role
+func (r *roleRepository) List(ctx context.Context, opt RoleListOption) ([]model.Role, int64, error) {
+	var roles []model.Role
 	var total int64
 
 	query := r.db.WithContext(ctx).Model(&model.Role{})

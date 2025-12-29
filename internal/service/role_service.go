@@ -16,11 +16,11 @@ var (
 )
 
 type RoleService interface {
-	Create(ctx context.Context, req *dto.RoleCreateReq) error
-	Update(ctx context.Context, id int64, req *dto.RoleUpdateReq) error
+	Create(ctx context.Context, req dto.RoleCreateReq) error
+	Update(ctx context.Context, id int64, req dto.RoleUpdateReq) error
 	Delete(ctx context.Context, id int64) error
 	FindByID(ctx context.Context, id int64) (*dto.RoleResp, error)
-	List(ctx context.Context, req *dto.RoleListReq) (*dto.RoleListResp, error)
+	List(ctx context.Context, req dto.RoleListReq) (*dto.RoleListResp, error)
 }
 
 type roleService struct {
@@ -31,7 +31,7 @@ func NewRoleService(repo repository.RoleRepository) RoleService {
 	return &roleService{repo: repo}
 }
 
-func (s *roleService) Create(ctx context.Context, req *dto.RoleCreateReq) error {
+func (s *roleService) Create(ctx context.Context, req dto.RoleCreateReq) error {
 	// Check if name exists
 	existingRole, err := s.repo.FindByName(ctx, req.Name)
 	if err != nil {
@@ -50,7 +50,7 @@ func (s *roleService) Create(ctx context.Context, req *dto.RoleCreateReq) error 
 		return ErrRoleCodeExists
 	}
 
-	role := &model.Role{
+	role := model.Role{
 		Name:        req.Name,
 		Code:        req.Code,
 		Description: req.Description,
@@ -59,7 +59,7 @@ func (s *roleService) Create(ctx context.Context, req *dto.RoleCreateReq) error 
 	return s.repo.Create(ctx, role)
 }
 
-func (s *roleService) Update(ctx context.Context, id int64, req *dto.RoleUpdateReq) error {
+func (s *roleService) Update(ctx context.Context, id int64, req dto.RoleUpdateReq) error {
 	role, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -94,7 +94,7 @@ func (s *roleService) Update(ctx context.Context, id int64, req *dto.RoleUpdateR
 		role.Description = req.Description
 	}
 
-	return s.repo.Update(ctx, role)
+	return s.repo.Update(ctx, *role)
 }
 
 func (s *roleService) Delete(ctx context.Context, id int64) error {
@@ -126,7 +126,7 @@ func (s *roleService) FindByID(ctx context.Context, id int64) (*dto.RoleResp, er
 	}, nil
 }
 
-func (s *roleService) List(ctx context.Context, req *dto.RoleListReq) (*dto.RoleListResp, error) {
+func (s *roleService) List(ctx context.Context, req dto.RoleListReq) (*dto.RoleListResp, error) {
 	roles, total, err := s.repo.List(ctx, repository.RoleListOption{
 		Page:     req.Page,
 		PageSize: req.PageSize,
@@ -137,9 +137,9 @@ func (s *roleService) List(ctx context.Context, req *dto.RoleListReq) (*dto.Role
 		return nil, err
 	}
 
-	var list []*dto.RoleResp
+	var list []dto.RoleResp
 	for _, role := range roles {
-		list = append(list, &dto.RoleResp{
+		list = append(list, dto.RoleResp{
 			CommonModel: role.CommonModel,
 			Name:        role.Name,
 			Code:        role.Code,

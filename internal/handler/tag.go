@@ -41,16 +41,22 @@ func (h *TagHandler) List(ctx *gin.Context) {
 		return
 	}
 
-	lists, total, err := h.svc.List(ctx, req)
+	lists, total, err := h.svc.List(ctx, req, true)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return
 	}
 
+	var tags []dto.TagResp
+
+	for _, tag := range lists {
+		tags = append(tags, convertTagResp(tag))
+	}
+
 	response.Success(ctx, dto.TagListResp{
 		Total: total,
-		Lists: lists,
+		Lists: tags,
 	})
 }
 
@@ -62,7 +68,7 @@ func (h *TagHandler) FindByID(ctx *gin.Context) {
 		return
 	}
 
-	tag, err := h.svc.FindByID(ctx, req.ID)
+	tag, err := h.svc.FindByID(ctx, req.ID, false)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())

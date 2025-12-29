@@ -11,8 +11,9 @@ import (
 
 type TagService interface {
 	Create(ctx context.Context, req dto.TagCreateReq) (*model.Tag, error)
-	List(ctx context.Context, req dto.TagListReq) ([]*model.Tag, int64, error)
-	FindByID(ctx context.Context, id int64) (*model.Tag, error)
+	List(ctx context.Context, req dto.TagListReq, withBlog bool) ([]model.Tag, int64, error)
+	FindByID(ctx context.Context, id int64, withBlog bool) (*model.Tag, error)
+	FindBySlug(ctx context.Context, slug string, withBlog bool) (*model.Tag, error)
 	UpdateByID(ctx context.Context, id int64, req dto.TagUpdateReq) (*model.Tag, error)
 	DeleteByID(ctx context.Context, id int64) error
 }
@@ -32,7 +33,7 @@ func NewTagService(tagRepo repository.TagRepository) TagService {
 }
 
 func (s *tagService) Create(ctx context.Context, req dto.TagCreateReq) (*model.Tag, error) {
-	tag := &model.Tag{
+	tag := model.Tag{
 		Name:        req.Name,
 		Slug:        req.Slug,
 		Description: req.Description,
@@ -47,7 +48,7 @@ func (s *tagService) Create(ctx context.Context, req dto.TagCreateReq) (*model.T
 		return nil, ErrTagNameExists
 	}
 
-	existSlugTag, err := s.tagRepo.FindBySlug(ctx, req.Slug)
+	existSlugTag, err := s.tagRepo.FindBySlug(ctx, req.Slug, false)
 	if err != nil {
 		return nil, err
 	}
@@ -64,8 +65,8 @@ func (s *tagService) Create(ctx context.Context, req dto.TagCreateReq) (*model.T
 	return createdTag, nil
 }
 
-func (s *tagService) List(ctx context.Context, req dto.TagListReq) ([]*model.Tag, int64, error) {
-	var tags []*model.Tag
+func (s *tagService) List(ctx context.Context, req dto.TagListReq, withBlog bool) ([]model.Tag, int64, error) {
+	var tags []model.Tag
 	var total int64
 	var err error
 
@@ -76,6 +77,7 @@ func (s *tagService) List(ctx context.Context, req dto.TagListReq) ([]*model.Tag
 		Slug:     req.Slug,
 		SortBy:   req.SortBy,
 		Order:    req.Order,
+		WithBlog: withBlog,
 	})
 	if err != nil {
 		return nil, 0, err
@@ -84,8 +86,21 @@ func (s *tagService) List(ctx context.Context, req dto.TagListReq) ([]*model.Tag
 	return tags, total, nil
 }
 
-func (s *tagService) FindByID(ctx context.Context, id int64) (*model.Tag, error) {
-	tag, err := s.tagRepo.FindByID(ctx, id)
+func (s *tagService) FindByID(ctx context.Context, id int64, withBlog bool) (*model.Tag, error) {
+	tag, err := s.tagRepo.FindByID(ctx, id, withBlog)
+	if err != nil {
+		return nil, err
+	}
+
+	if tag.ID == 0 {
+		return nil, ErrTagNotFound
+	}
+
+	return tag, nil
+}
+
+func (s *tagService) FindBySlug(ctx context.Context, slug string, withBlog bool) (*model.Tag, error) {
+	tag, err := s.tagRepo.FindBySlug(ctx, slug, withBlog)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +113,7 @@ func (s *tagService) FindByID(ctx context.Context, id int64) (*model.Tag, error)
 }
 
 func (s *tagService) DeleteByID(ctx context.Context, id int64) error {
-	tag, err := s.tagRepo.FindByID(ctx, id)
+	tag, err := s.tagRepo.FindByID(ctx, id, false)
 	if err != nil {
 		return err
 	}
@@ -111,7 +126,7 @@ func (s *tagService) DeleteByID(ctx context.Context, id int64) error {
 }
 
 func (s *tagService) UpdateByID(ctx context.Context, id int64, req dto.TagUpdateReq) (*model.Tag, error) {
-	tag, err := s.tagRepo.FindByID(ctx, id)
+	tag, err := s.tagRepo.FindByID(ctx, id, false)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +139,7 @@ func (s *tagService) UpdateByID(ctx context.Context, id int64, req dto.TagUpdate
 	tag.Slug = req.Slug
 	tag.Description = req.Description
 
-	updatedTag, err := s.tagRepo.UpdateByID(ctx, id, tag)
+	updatedTag, err := s.tagRepo.UpdateByID(ctx, id, *tag)
 	if err != nil {
 		return nil, err
 	}

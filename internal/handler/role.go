@@ -25,7 +25,7 @@ func (h *RoleHandler) Create(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.Create(c, &req); err != nil {
+	if err := h.svc.Create(c, req); err != nil {
 		if errors.Is(err, service.ErrRoleNameExists) || errors.Is(err, service.ErrRoleCodeExists) {
 			response.BusinessError(c, err.Error())
 			return
@@ -51,7 +51,7 @@ func (h *RoleHandler) Update(c *gin.Context) {
 		return
 	}
 
-	if err := h.svc.Update(c, int64(id), &req); err != nil {
+	if err := h.svc.Update(c, int64(id), req); err != nil {
 		if errors.Is(err, service.ErrRoleNotFound) {
 			response.BusinessError(c, err.Error())
 			return
@@ -115,7 +115,7 @@ func (h *RoleHandler) List(c *gin.Context) {
 		return
 	}
 
-	resp, err := h.svc.List(c, &req)
+	resp, err := h.svc.List(c, req)
 	if err != nil {
 		response.BusinessError(c, "Failed to list roles")
 		return

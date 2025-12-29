@@ -16,9 +16,9 @@ type UserListOption struct {
 }
 
 type UserRepository interface {
-	Create(ctx context.Context, user *model.User) error
-	Update(ctx context.Context, user *model.User) error
-	List(ctx context.Context, option UserListOption) ([]*model.User, int64, error)
+	Create(ctx context.Context, user model.User) error
+	Update(ctx context.Context, user model.User) error
+	List(ctx context.Context, option UserListOption) ([]model.User, int64, error)
 	FindByID(ctx context.Context, id int64) (*model.User, error)
 	FindByEmail(ctx context.Context, email string) (*model.User, error)
 	DeleteByID(ctx context.Context, id int64) error
@@ -32,7 +32,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepo{db: db}
 }
 
-func (r *userRepo) Create(ctx context.Context, user *model.User) error {
+func (r *userRepo) Create(ctx context.Context, user model.User) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Create(user).Error; err != nil {
 			return err
@@ -46,7 +46,7 @@ func (r *userRepo) Create(ctx context.Context, user *model.User) error {
 	})
 }
 
-func (r *userRepo) Update(ctx context.Context, user *model.User) error {
+func (r *userRepo) Update(ctx context.Context, user model.User) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(user).Error; err != nil {
 			return err
@@ -60,8 +60,8 @@ func (r *userRepo) Update(ctx context.Context, user *model.User) error {
 	})
 }
 
-func (r *userRepo) List(ctx context.Context, option UserListOption) ([]*model.User, int64, error) {
-	var users []*model.User
+func (r *userRepo) List(ctx context.Context, option UserListOption) ([]model.User, int64, error) {
+	var users []model.User
 	var total int64
 
 	query := r.db.WithContext(ctx).Model(&model.User{})

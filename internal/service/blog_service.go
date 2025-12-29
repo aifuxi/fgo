@@ -10,9 +10,10 @@ import (
 )
 
 type BlogService interface {
-	Create(ctx context.Context, req *dto.BlogCreateReq) error
-	List(ctx context.Context, req *dto.BlogListReq) ([]*model.Blog, int64, error)
+	Create(ctx context.Context, req dto.BlogCreateReq) error
+	List(ctx context.Context, req dto.BlogListReq) ([]model.Blog, int64, error)
 	FindByID(ctx context.Context, id int64) (*model.Blog, error)
+	FindBySlug(ctx context.Context, slug string) (*model.Blog, error)
 	UpdateByID(ctx context.Context, id int64, req *dto.BlogUpdateReq) error
 	DeleteByID(ctx context.Context, id int64) error
 }
@@ -31,7 +32,7 @@ func NewBlogService(repo repository.BlogRepository) BlogService {
 	return &blogService{repo: repo}
 }
 
-func (s *blogService) Create(ctx context.Context, req *dto.BlogCreateReq) error {
+func (s *blogService) Create(ctx context.Context, req dto.BlogCreateReq) error {
 	// Check if slug exists
 	existingBlog, err := s.repo.FindBySlug(ctx, req.Slug)
 	if err != nil {
@@ -60,7 +61,7 @@ func (s *blogService) Create(ctx context.Context, req *dto.BlogCreateReq) error 
 		}
 	}
 
-	blog := &model.Blog{
+	blog := model.Blog{
 		Title:       req.Title,
 		Slug:        req.Slug,
 		Description: req.Description,
@@ -74,7 +75,7 @@ func (s *blogService) Create(ctx context.Context, req *dto.BlogCreateReq) error 
 	return s.repo.Create(ctx, blog)
 }
 
-func (s *blogService) List(ctx context.Context, req *dto.BlogListReq) ([]*model.Blog, int64, error) {
+func (s *blogService) List(ctx context.Context, req dto.BlogListReq) ([]model.Blog, int64, error) {
 	var published *bool
 	switch req.PublishedStatus {
 	case "published":
@@ -100,6 +101,17 @@ func (s *blogService) List(ctx context.Context, req *dto.BlogListReq) ([]*model.
 
 func (s *blogService) FindByID(ctx context.Context, id int64) (*model.Blog, error) {
 	blog, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if blog == nil {
+		return nil, ErrBlogNotFound
+	}
+	return blog, nil
+}
+
+func (s *blogService) FindBySlug(ctx context.Context, slug string) (*model.Blog, error) {
+	blog, err := s.repo.FindBySlug(ctx, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -172,5 +184,5 @@ func (s *blogService) UpdateByID(ctx context.Context, id int64, req *dto.BlogUpd
 	blog.CategoryID = req.CategoryID
 	blog.Tags = tags
 
-	return s.repo.Update(ctx, blog)
+	return s.repo.Update(ctx, *blog)
 }

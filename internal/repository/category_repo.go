@@ -16,14 +16,15 @@ type CategoryListOption struct {
 	Slug     string
 	SortBy   string
 	Order    string
+	WithBlog bool
 }
 
 type CategoryRepository interface {
-	Create(ctx context.Context, category *model.Category) error
-	Update(ctx context.Context, category *model.Category) error
-	List(ctx context.Context, option CategoryListOption) ([]*model.Category, int64, error)
-	FindByID(ctx context.Context, id int64) (*model.Category, error)
-	FindBySlug(ctx context.Context, slug string) (*model.Category, error)
+	Create(ctx context.Context, category model.Category) error
+	Update(ctx context.Context, category model.Category) error
+	List(ctx context.Context, option CategoryListOption) ([]model.Category, int64, error)
+	FindByID(ctx context.Context, id int64, withBlog bool) (*model.Category, error)
+	FindBySlug(ctx context.Context, slug string, withBlog bool) (*model.Category, error)
 	FindByName(ctx context.Context, name string) (*model.Category, error)
 	DeleteByID(ctx context.Context, id int64) error
 }
@@ -36,21 +37,26 @@ func NewCategoryRepository(db *gorm.DB) CategoryRepository {
 	return &categoryRepo{db: db}
 }
 
-func (r *categoryRepo) Create(ctx context.Context, category *model.Category) error {
-	return r.db.WithContext(ctx).Create(category).Error
+func (r *categoryRepo) Create(ctx context.Context, category model.Category) error {
+	return r.db.WithContext(ctx).Create(&category).Error
 }
 
-func (r *categoryRepo) Update(ctx context.Context, category *model.Category) error {
-	return r.db.WithContext(ctx).Model(category).Updates(category).Error
+func (r *categoryRepo) Update(ctx context.Context, category model.Category) error {
+	return r.db.WithContext(ctx).Model(&category).Updates(&category).Error
 }
 
-func (r *categoryRepo) List(ctx context.Context, option CategoryListOption) ([]*model.Category, int64, error) {
-	var categories []*model.Category
+func (r *categoryRepo) List(ctx context.Context, option CategoryListOption) ([]model.Category, int64, error) {
+	var categories []model.Category
 	var total int64
 
 	query := r.db.WithContext(ctx).Model(&model.Category{})
 
 	logger.GetLoggerWithSkip(1).Infof("CategoryRepository.List: %v", option)
+
+	if option.WithBlog {
+		query = query.Preload("Blogs")
+	}
+
 	if option.Name != "" {
 		query = query.Where("name like ?", "%"+option.Name+"%")
 	}
@@ -88,9 +94,15 @@ func (r *categoryRepo) List(ctx context.Context, option CategoryListOption) ([]*
 	return categories, total, nil
 }
 
-func (r *categoryRepo) FindByID(ctx context.Context, id int64) (*model.Category, error) {
+func (r *categoryRepo) FindByID(ctx context.Context, id int64, withBlog bool) (*model.Category, error) {
+
+	query := r.db.WithContext(ctx).Model(&model.Category{})
+	if withBlog {
+		query = query.Preload("Blogs")
+	}
+
 	var category model.Category
-	if err := r.db.WithContext(ctx).First(&category, id).Error; err != nil {
+	if err := query.First(&category, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -99,9 +111,13 @@ func (r *categoryRepo) FindByID(ctx context.Context, id int64) (*model.Category,
 	return &category, nil
 }
 
-func (r *categoryRepo) FindBySlug(ctx context.Context, slug string) (*model.Category, error) {
+func (r *categoryRepo) FindBySlug(ctx context.Context, slug string, withBlog bool) (*model.Category, error) {
+	query := r.db.WithContext(ctx).Model(&model.Category{})
+	if withBlog {
+		query = query.Preload("Blogs")
+	}
 	var category model.Category
-	if err := r.db.WithContext(ctx).Where("slug = ?", slug).First(&category).Error; err != nil {
+	if err := query.Where("slug = ?", slug).First(&category).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

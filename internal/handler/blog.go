@@ -23,7 +23,7 @@ func (h *BlogHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	err := h.svc.Create(ctx, &req)
+	err := h.svc.Create(ctx, req)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
@@ -41,7 +41,7 @@ func (h *BlogHandler) List(ctx *gin.Context) {
 		return
 	}
 
-	lists, total, err := h.svc.List(ctx, &req)
+	lists, total, err := h.svc.List(ctx, req)
 
 	if err != nil {
 		response.BusinessError(ctx, err.Error())

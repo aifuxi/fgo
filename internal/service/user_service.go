@@ -12,11 +12,11 @@ import (
 )
 
 type UserService interface {
-	Register(ctx context.Context, req *dto.UserRegisterReq) error
-	Login(ctx context.Context, req *dto.UserLoginReq) (string, error)
-	Update(ctx context.Context, id int64, req *dto.UserUpdateReq) error
+	Register(ctx context.Context, req dto.UserRegisterReq) error
+	Login(ctx context.Context, req dto.UserLoginReq) (string, error)
+	Update(ctx context.Context, id int64, req dto.UserUpdateReq) error
 	Info(ctx context.Context, id int64) (*dto.UserResp, error)
-	List(ctx context.Context, req *dto.UserListReq) (*dto.UserListResp, error)
+	List(ctx context.Context, req dto.UserListReq) (*dto.UserListResp, error)
 	FindByID(ctx context.Context, id int64) (*dto.UserResp, error)
 	DeleteByID(ctx context.Context, id int64) error
 }
@@ -37,7 +37,7 @@ func NewUserService(repo repository.UserRepository, roleRepo repository.RoleRepo
 	return &userService{repo: repo, roleRepo: roleRepo}
 }
 
-func (s *userService) Register(ctx context.Context, req *dto.UserRegisterReq) error {
+func (s *userService) Register(ctx context.Context, req dto.UserRegisterReq) error {
 	// Check if email exists
 	existingUser, err := s.repo.FindByEmail(ctx, req.Email)
 	if err != nil {
@@ -71,10 +71,10 @@ func (s *userService) Register(ctx context.Context, req *dto.UserRegisterReq) er
 		},
 	}
 
-	return s.repo.Create(ctx, user)
+	return s.repo.Create(ctx, *user)
 }
 
-func (s *userService) Login(ctx context.Context, req *dto.UserLoginReq) (string, error) {
+func (s *userService) Login(ctx context.Context, req dto.UserLoginReq) (string, error) {
 	user, err := s.repo.FindByEmail(ctx, req.Email)
 	if err != nil {
 		return "", err
@@ -98,7 +98,7 @@ func (s *userService) Login(ctx context.Context, req *dto.UserLoginReq) (string,
 	return token, nil
 }
 
-func (s *userService) Update(ctx context.Context, id int64, req *dto.UserUpdateReq) error {
+func (s *userService) Update(ctx context.Context, id int64, req dto.UserUpdateReq) error {
 	user, err := s.repo.FindByID(ctx, id)
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (s *userService) Update(ctx context.Context, id int64, req *dto.UserUpdateR
 		user.Roles = roles
 	}
 
-	return s.repo.Update(ctx, user)
+	return s.repo.Update(ctx, *user)
 }
 
 func (s *userService) Info(ctx context.Context, id int64) (*dto.UserResp, error) {
@@ -144,10 +144,12 @@ func (s *userService) Info(ctx context.Context, id int64) (*dto.UserResp, error)
 		return nil, ErrUserNotFound
 	}
 
-	return convertToUserResp(user), nil
+	userResp := convertToUserResp(*user)
+
+	return &userResp, nil
 }
 
-func (s *userService) List(ctx context.Context, req *dto.UserListReq) (*dto.UserListResp, error) {
+func (s *userService) List(ctx context.Context, req dto.UserListReq) (*dto.UserListResp, error) {
 	users, total, err := s.repo.List(ctx, repository.UserListOption{
 		Page:     req.Page,
 		PageSize: req.PageSize,

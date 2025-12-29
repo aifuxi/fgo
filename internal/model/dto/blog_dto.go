@@ -25,8 +25,8 @@ type BlogListReq struct {
 }
 
 type BlogListResp struct {
-	Total int64         `json:"total"`
-	Lists []*model.Blog `json:"lists"`
+	Total int64        `json:"total"`
+	Lists []model.Blog `json:"lists"`
 }
 
 type BlogFindByIDReq struct {
