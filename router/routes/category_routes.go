@@ -10,11 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterCategoryRoutes(api *gin.RouterGroup, svc service.UserService) {
+func RegisterCategoryRoutes(api *gin.RouterGroup, svc service.UserService, tokenRepo repository.TokenRepository) {
 	h := handler.NewCategoryHandler(service.NewCategoryService(repository.NewCategoryRepository(db.GetDB())))
 
 	routes := api.Group("/categories")
-	routes.Use(middleware.Auth())
+	routes.Use(middleware.Auth(tokenRepo))
 	{
 		routes.GET("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionCategoryList), h.List)
 		routes.GET("/:id", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionCategoryView), h.FindByID)

@@ -15,20 +15,21 @@ type RoleUpdateReq struct {
 }
 
 type RoleListReq struct {
-	Page     int    `json:"page" form:"page" binding:"min=1"`
-	PageSize int    `json:"pageSize" form:"pageSize" binding:"min=1,max=100"`
-	Name     string `json:"name" form:"name"`
-	Code     string `json:"code" form:"code"`
+	ListReq
+	Name string `json:"name" form:"name"`
+	Code string `json:"code" form:"code"`
 }
 
 type RoleResp struct {
-	model.CommonModel
-	Name        string `json:"name"`
-	Code        string `json:"code"`
-	Description string `json:"description"`
+	model.Role
+	UserCount int64 `json:"userCount"`
 }
 
 type RoleListResp struct {
 	Total int64      `json:"total"`
 	Lists []RoleResp `json:"lists"`
+}
+
+type RoleFindByIDReq struct {
+	ID int64 `uri:"id" binding:"required"`
 }

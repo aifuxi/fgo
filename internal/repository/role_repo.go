@@ -13,13 +13,14 @@ type RoleListOption struct {
 	PageSize int
 	Code     string
 	Name     string
+	WithUser bool
 }
 
 type RoleRepository interface {
 	Create(ctx context.Context, role model.Role) error
 	Update(ctx context.Context, role model.Role) error
 	Delete(ctx context.Context, id int64) error
-	FindByID(ctx context.Context, id int64) (*model.Role, error)
+	FindByID(ctx context.Context, id int64, withUser bool) (*model.Role, error)
 	FindByName(ctx context.Context, name string) (*model.Role, error)
 	FindByCode(ctx context.Context, code string) (*model.Role, error)
 	List(ctx context.Context, opt RoleListOption) ([]model.Role, int64, error)
@@ -45,9 +46,16 @@ func (r *roleRepository) Delete(ctx context.Context, id int64) error {
 	return r.db.WithContext(ctx).Delete(&model.Role{}, id).Error
 }
 
-func (r *roleRepository) FindByID(ctx context.Context, id int64) (*model.Role, error) {
+func (r *roleRepository) FindByID(ctx context.Context, id int64, withUser bool) (*model.Role, error) {
+
+	query := r.db.WithContext(ctx).Model(&model.Role{})
+	if withUser {
+		query = query.Preload("Users")
+	}
+
 	var role model.Role
-	if err := r.db.WithContext(ctx).First(&role, id).Error; err != nil {
+
+	if err := query.First(&role, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

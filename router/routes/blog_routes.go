@@ -10,11 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterBlogRoutes(api *gin.RouterGroup, svc service.UserService) {
+func RegisterBlogRoutes(api *gin.RouterGroup, svc service.UserService,tokenRepo repository.TokenRepository) {
 	h := handler.NewBlogHandler(service.NewBlogService(repository.NewBlogRepository(db.GetDB())))
 
 	routes := api.Group("/blogs")
-	routes.Use(middleware.Auth())
+	routes.Use(middleware.Auth(tokenRepo))
 	{
 		routes.GET("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionBlogList), h.List)
 		routes.POST("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionBlogCreate), h.Create)

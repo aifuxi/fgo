@@ -11,6 +11,8 @@ func convertToUserResp(u model.User) dto.UserResp {
 		Nickname:    u.Nickname,
 		Email:       u.Email,
 		Roles:       u.Roles,
+		Banned:      u.Banned,
+		BannedAt:    u.BannedAt,
 	}
 }
 

@@ -32,6 +32,7 @@ func main() {
 		&model.User{},
 		&model.Role{},
 		&model.Permission{},
+		&model.Token{},
 	)
 
 	permissions := []model.Permission{

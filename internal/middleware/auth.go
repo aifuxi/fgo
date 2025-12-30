@@ -3,12 +3,13 @@ package middleware
 import (
 	"strings"
 
+	"github.com/aifuxi/fgo/internal/repository"
 	"github.com/aifuxi/fgo/pkg/auth"
 	"github.com/aifuxi/fgo/pkg/response"
 	"github.com/gin-gonic/gin"
 )
 
-func Auth() gin.HandlerFunc {
+func Auth(tokenRepo repository.TokenRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
@@ -27,6 +28,18 @@ func Auth() gin.HandlerFunc {
 		claims, err := auth.ParseToken(parts[1])
 		if err != nil {
 			response.Unauthorized(c, "Invalid or expired token")
+			c.Abort()
+			return
+		}
+
+		tk, err := tokenRepo.FindByToken(c, parts[1])
+		if err != nil {
+			response.Unauthorized(c, "Token verification failed")
+			c.Abort()
+			return
+		}
+		if tk == nil || tk.UserID != claims.UserID {
+			response.Unauthorized(c, "Token not found or mismatched user")
 			c.Abort()
 			return
 		}

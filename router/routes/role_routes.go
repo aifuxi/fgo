@@ -10,11 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterRoleRoutes(api *gin.RouterGroup, svc service.UserService) {
+func RegisterRoleRoutes(api *gin.RouterGroup, svc service.UserService, tokenRepo repository.TokenRepository) {
 	h := handler.NewRoleHandler(service.NewRoleService(repository.NewRoleRepository(db.GetDB())))
 
 	routes := api.Group("/roles")
-	routes.Use(middleware.Auth())
+	routes.Use(middleware.Auth(tokenRepo))
 	{
 		routes.GET("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionRoleList), h.List)
 		routes.POST("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionRoleCreate), h.Create)

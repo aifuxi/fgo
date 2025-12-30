@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"errors"
+	"time"
 
 	"github.com/aifuxi/fgo/internal/model"
 	"gorm.io/gorm"
@@ -22,6 +23,8 @@ type UserRepository interface {
 	FindByID(ctx context.Context, id int64) (*model.User, error)
 	FindByEmail(ctx context.Context, email string) (*model.User, error)
 	DeleteByID(ctx context.Context, id int64) error
+	BanByID(ctx context.Context, id int64, ban bool) error
+	UpdatePasswordByID(ctx context.Context, id int64, password string) error
 }
 
 type userRepo struct {
@@ -34,11 +37,11 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 func (r *userRepo) Create(ctx context.Context, user model.User) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Create(user).Error; err != nil {
+		if err := tx.Create(&user).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Model(user).Association("Roles").Replace(user.Roles); err != nil {
+		if err := tx.Model(&user).Association("Roles").Replace(user.Roles); err != nil {
 			return err
 		}
 
@@ -48,11 +51,15 @@ func (r *userRepo) Create(ctx context.Context, user model.User) error {
 
 func (r *userRepo) Update(ctx context.Context, user model.User) error {
 	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := tx.Save(user).Error; err != nil {
+		if err := tx.Updates(&model.User{
+			CommonModel: model.CommonModel{ID: user.ID},
+			Nickname:    user.Nickname,
+			Email:       user.Email,
+		}).Error; err != nil {
 			return err
 		}
 
-		if err := tx.Model(user).Association("Roles").Replace(user.Roles); err != nil {
+		if err := tx.Model(&user).Association("Roles").Replace(user.Roles); err != nil {
 			return err
 		}
 
@@ -113,4 +120,17 @@ func (r *userRepo) FindByEmail(ctx context.Context, email string) (*model.User, 
 
 func (r *userRepo) DeleteByID(ctx context.Context, id int64) error {
 	return r.db.WithContext(ctx).Delete(&model.User{}, id).Error
+}
+
+func (r *userRepo) BanByID(ctx context.Context, id int64, ban bool) error {
+
+	if ban {
+		return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Updates(map[string]any{"banned": ban, "banned_at": time.Now()}).Error
+	}
+
+	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Updates(map[string]any{"banned": false, "banned_at": nil}).Error
+}
+
+func (r *userRepo) UpdatePasswordByID(ctx context.Context, id int64, password string) error {
+	return r.db.WithContext(ctx).Model(&model.User{}).Where("id = ?", id).Updates(map[string]any{"password": password}).Error
 }

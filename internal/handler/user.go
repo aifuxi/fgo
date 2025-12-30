@@ -1,10 +1,12 @@
 package handler
 
 import (
-	"github.com/aifuxi/fgo/internal/model/dto"
-	"github.com/aifuxi/fgo/internal/service"
-	"github.com/aifuxi/fgo/pkg/response"
-	"github.com/gin-gonic/gin"
+    "strings"
+
+    "github.com/aifuxi/fgo/internal/model/dto"
+    "github.com/aifuxi/fgo/internal/service"
+    "github.com/aifuxi/fgo/pkg/response"
+    "github.com/gin-gonic/gin"
 )
 
 type UserHandler struct {
@@ -31,6 +33,22 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 	response.Success(ctx, nil)
 }
 
+func (h *UserHandler) Create(ctx *gin.Context) {
+	var req dto.UserCreateReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.ParamError(ctx, err.Error())
+		return
+	}
+
+	err := h.svc.Create(ctx, req)
+	if err != nil {
+		response.BusinessError(ctx, err.Error())
+		return
+	}
+
+	response.Success(ctx, nil)
+}
+
 func (h *UserHandler) Login(ctx *gin.Context) {
 	var req dto.UserLoginReq
 	if err := ctx.ShouldBindJSON(&req); err != nil {
@@ -45,6 +63,26 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 	}
 
 	response.Success(ctx, gin.H{"token": token})
+}
+
+func (h *UserHandler) Logout(ctx *gin.Context) {
+    authHeader := ctx.GetHeader("Authorization")
+    if authHeader == "" {
+        response.Unauthorized(ctx, "Authorization header is required")
+        return
+    }
+
+    parts := strings.SplitN(authHeader, " ", 2)
+    if !(len(parts) == 2 && parts[0] == "Bearer") {
+        response.Unauthorized(ctx, "Authorization header format must be Bearer {token}")
+        return
+    }
+
+    if err := h.svc.Logout(ctx, parts[1]); err != nil {
+        response.BusinessError(ctx, err.Error())
+        return
+    }
+    response.Success(ctx, nil)
 }
 
 func (h *UserHandler) List(ctx *gin.Context) {
@@ -126,6 +164,53 @@ func (h *UserHandler) Delete(ctx *gin.Context) {
 	}
 
 	err := h.svc.DeleteByID(ctx, req.ID)
+	if err != nil {
+		response.BusinessError(ctx, err.Error())
+		return
+	}
+
+	response.Success(ctx, nil)
+}
+
+func (h *UserHandler) Ban(ctx *gin.Context) {
+	var idReq dto.UserFindByIDReq
+
+	if err := ctx.ShouldBindUri(&idReq); err != nil {
+		response.ParamError(ctx, err.Error())
+		return
+	}
+
+	var req dto.UserBanReq
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.ParamError(ctx, err.Error())
+		return
+	}
+
+	err := h.svc.BanByID(ctx, idReq.ID, req.Ban)
+	if err != nil {
+		response.BusinessError(ctx, err.Error())
+		return
+	}
+
+	response.Success(ctx, nil)
+}
+
+func (h *UserHandler) UpdatePassword(ctx *gin.Context) {
+	var idReq dto.UserFindByIDReq
+
+	if err := ctx.ShouldBindUri(&idReq); err != nil {
+		response.ParamError(ctx, err.Error())
+		return
+	}
+
+	var req dto.UserUpdatePasswordReq
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		response.ParamError(ctx, err.Error())
+		return
+	}
+
+	err := h.svc.UpdatePasswordByID(ctx, idReq.ID, req.Password)
 	if err != nil {
 		response.BusinessError(ctx, err.Error())
 		return

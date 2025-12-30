@@ -60,7 +60,7 @@ func (s *roleService) Create(ctx context.Context, req dto.RoleCreateReq) error {
 }
 
 func (s *roleService) Update(ctx context.Context, id int64, req dto.RoleUpdateReq) error {
-	role, err := s.repo.FindByID(ctx, id)
+	role, err := s.repo.FindByID(ctx, id, false)
 	if err != nil {
 		return err
 	}
@@ -98,7 +98,7 @@ func (s *roleService) Update(ctx context.Context, id int64, req dto.RoleUpdateRe
 }
 
 func (s *roleService) Delete(ctx context.Context, id int64) error {
-	role, err := s.repo.FindByID(ctx, id)
+	role, err := s.repo.FindByID(ctx, id, false)
 	if err != nil {
 		return err
 	}
@@ -110,7 +110,7 @@ func (s *roleService) Delete(ctx context.Context, id int64) error {
 }
 
 func (s *roleService) FindByID(ctx context.Context, id int64) (*dto.RoleResp, error) {
-	role, err := s.repo.FindByID(ctx, id)
+	role, err := s.repo.FindByID(ctx, id, true)
 	if err != nil {
 		return nil, err
 	}
@@ -119,10 +119,8 @@ func (s *roleService) FindByID(ctx context.Context, id int64) (*dto.RoleResp, er
 	}
 
 	return &dto.RoleResp{
-		CommonModel: role.CommonModel,
-		Name:        role.Name,
-		Code:        role.Code,
-		Description: role.Description,
+		Role:      *role,
+		UserCount: int64(len(role.Users)),
 	}, nil
 }
 
@@ -132,6 +130,7 @@ func (s *roleService) List(ctx context.Context, req dto.RoleListReq) (*dto.RoleL
 		PageSize: req.PageSize,
 		Name:     req.Name,
 		Code:     req.Code,
+		WithUser: true,
 	})
 	if err != nil {
 		return nil, err
@@ -140,10 +139,8 @@ func (s *roleService) List(ctx context.Context, req dto.RoleListReq) (*dto.RoleL
 	var list []dto.RoleResp
 	for _, role := range roles {
 		list = append(list, dto.RoleResp{
-			CommonModel: role.CommonModel,
-			Name:        role.Name,
-			Code:        role.Code,
-			Description: role.Description,
+			Role:      role,
+			UserCount: int64(len(role.Users)),
 		})
 	}
 

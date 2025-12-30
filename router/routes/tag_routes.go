@@ -10,11 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterTagRoutes(api *gin.RouterGroup, svc service.UserService) {
+func RegisterTagRoutes(api *gin.RouterGroup, svc service.UserService, tokenRepo repository.TokenRepository) {
 	h := handler.NewTagHandler(service.NewTagService(repository.NewTagRepository(db.GetDB())))
 
 	routes := api.Group("/tags")
-	routes.Use(middleware.Auth())
+	routes.Use(middleware.Auth(tokenRepo))
 	{
 		routes.GET("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionTagList), h.List)
 		routes.POST("", middleware.RequirePermissions(svc, model.PermissionAdminAll, model.PermissionTagCreate), h.Create)

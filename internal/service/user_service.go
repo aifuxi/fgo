@@ -12,18 +12,23 @@ import (
 )
 
 type UserService interface {
-	Register(ctx context.Context, req dto.UserRegisterReq) error
-	Login(ctx context.Context, req dto.UserLoginReq) (string, error)
-	Update(ctx context.Context, id int64, req dto.UserUpdateReq) error
-	Info(ctx context.Context, id int64) (*dto.UserResp, error)
-	List(ctx context.Context, req dto.UserListReq) (*dto.UserListResp, error)
-	FindByID(ctx context.Context, id int64) (*dto.UserResp, error)
-	DeleteByID(ctx context.Context, id int64) error
+    Register(ctx context.Context, req dto.UserRegisterReq) error
+    Create(ctx context.Context, req dto.UserCreateReq) error
+    Login(ctx context.Context, req dto.UserLoginReq) (string, error)
+    Logout(ctx context.Context, token string) error
+    Update(ctx context.Context, id int64, req dto.UserUpdateReq) error
+    Info(ctx context.Context, id int64) (*dto.UserResp, error)
+    List(ctx context.Context, req dto.UserListReq) (*dto.UserListResp, error)
+    FindByID(ctx context.Context, id int64) (*dto.UserResp, error)
+    DeleteByID(ctx context.Context, id int64) error
+    BanByID(ctx context.Context, id int64, ban bool) error
+    UpdatePasswordByID(ctx context.Context, id int64, password string) error
 }
 
 type userService struct {
-	repo     repository.UserRepository
-	roleRepo repository.RoleRepository
+    repo     repository.UserRepository
+    roleRepo repository.RoleRepository
+    tokenRepo repository.TokenRepository
 }
 
 var (
@@ -31,10 +36,11 @@ var (
 	ErrUserEmailExists        = errors.New("user email already exists")
 	ErrInvalidEmailOrPassword = errors.New("invalid email or password")
 	ErrVisitorRoleNotFound    = errors.New("visitor role not found")
+	ErrUserBanned             = errors.New("user banned")
 )
 
-func NewUserService(repo repository.UserRepository, roleRepo repository.RoleRepository) UserService {
-	return &userService{repo: repo, roleRepo: roleRepo}
+func NewUserService(repo repository.UserRepository, roleRepo repository.RoleRepository, tokenRepo repository.TokenRepository) UserService {
+    return &userService{repo: repo, roleRepo: roleRepo, tokenRepo: tokenRepo}
 }
 
 func (s *userService) Register(ctx context.Context, req dto.UserRegisterReq) error {
@@ -74,11 +80,47 @@ func (s *userService) Register(ctx context.Context, req dto.UserRegisterReq) err
 	return s.repo.Create(ctx, *user)
 }
 
+func (s *userService) Create(ctx context.Context, req dto.UserCreateReq) error {
+	// Check if email exists
+	existingUser, err := s.repo.FindByEmail(ctx, req.Email)
+	if err != nil {
+		return err
+	}
+	if existingUser != nil {
+		return ErrUserEmailExists
+	}
+
+	// Hash password
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	var roles []*model.Role
+	for _, roleID := range req.RoleIDs {
+		role, err := s.roleRepo.FindByID(ctx, roleID, false)
+		if err != nil {
+			return err
+		}
+		roles = append(roles, role)
+	}
+
+	user := &model.User{
+		Nickname: req.Nickname,
+		Email:    req.Email,
+		Password: string(hashedPassword),
+		Roles:    roles,
+	}
+
+	return s.repo.Create(ctx, *user)
+}
+
 func (s *userService) Login(ctx context.Context, req dto.UserLoginReq) (string, error) {
 	user, err := s.repo.FindByEmail(ctx, req.Email)
 	if err != nil {
 		return "", err
 	}
+
 	if user == nil {
 		return "", ErrInvalidEmailOrPassword
 	}
@@ -89,13 +131,26 @@ func (s *userService) Login(ctx context.Context, req dto.UserLoginReq) (string, 
 		return "", ErrInvalidEmailOrPassword
 	}
 
-	// Generate token
-	token, err := auth.GenerateToken(user.ID)
-	if err != nil {
-		return "", err
+	if user.Banned {
+		return "", ErrUserBanned
 	}
 
-	return token, nil
+    // Generate token
+    token, err := auth.GenerateToken(user.ID)
+    if err != nil {
+        return "", err
+    }
+
+    // Persist token for session control
+    if err := s.tokenRepo.Create(ctx, model.Token{Token: token, UserID: user.ID}); err != nil {
+        return "", err
+    }
+
+    return token, nil
+}
+
+func (s *userService) Logout(ctx context.Context, token string) error {
+    return s.tokenRepo.DeleteByToken(ctx, token)
 }
 
 func (s *userService) Update(ctx context.Context, id int64, req dto.UserUpdateReq) error {
@@ -194,4 +249,33 @@ func (s *userService) DeleteByID(ctx context.Context, id int64) error {
 		return ErrUserNotFound
 	}
 	return s.repo.DeleteByID(ctx, id)
+}
+
+func (s *userService) BanByID(ctx context.Context, id int64, ban bool) error {
+	user, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return ErrUserNotFound
+	}
+
+	return s.repo.BanByID(ctx, id, ban)
+}
+
+func (s *userService) UpdatePasswordByID(ctx context.Context, id int64, password string) error {
+	user, err := s.repo.FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return ErrUserNotFound
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	return s.repo.UpdatePasswordByID(ctx, id, string(hashedPassword))
 }
