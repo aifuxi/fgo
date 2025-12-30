@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"strings"
+	"slices"
 
 	"github.com/aifuxi/fgo/config"
 	"github.com/aifuxi/fgo/internal/model"
@@ -72,6 +72,12 @@ func main() {
 	var allPermissions []model.Permission
 	var visitorPermissions []model.Permission
 
+	visitorPermissionCodes := []string{
+		model.PermissionBlogList, model.PermissionBlogView,
+		model.PermissionCategoryList, model.PermissionCategoryView,
+		model.PermissionTagList, model.PermissionTagView,
+	}
+
 	for _, p := range permissions {
 		perm := p
 		database.Where("code = ?", perm.Code).FirstOrCreate(&perm)
@@ -81,7 +87,7 @@ func main() {
 			continue
 		}
 
-		if strings.HasSuffix(perm.Code, ":list") || strings.HasSuffix(perm.Code, ":view") {
+		if slices.Contains(visitorPermissionCodes, perm.Code) {
 			visitorPermissions = append(visitorPermissions, perm)
 		}
 	}
